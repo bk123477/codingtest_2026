@@ -1,0 +1,14 @@
+{
+  "user": "example-user",
+  "date": "2026-09-05",
+  "platform": "programmers",
+  "problem_id": "42747",
+  "url": "https://school.programmers.co.kr/learn/courses/30/lessons/42747",
+  "title": "H-Index",
+  "language": "python",
+  "solution": "solution.py",
+  "status": "solved",
+  "level": "Level 2",
+  "tags": ["정렬"],
+  "minutes": 20
+}

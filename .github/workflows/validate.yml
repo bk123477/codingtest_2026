@@ -1,0 +1,36 @@
+name: Study validation
+
+on:
+  push:
+    branches-ignore: [progress]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: study-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Test study tools
+        run: python -m unittest discover -s tests -v
+      - name: Validate records and daily PR scope
+        env:
+          STUDY_BRANCH: ${{ github.head_ref || github.ref_name }}
+          STUDY_BASE: ${{ github.event.pull_request.base.sha || 'origin/main' }}
+        run: python study.py check --branch "$STUDY_BRANCH" --base "$STUDY_BASE"
+      - name: Show progress
+        if: success()
+        env:
+          STUDY_REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+          STUDY_REF: ${{ github.sha }}
+        run: python study.py report --repo-url "$STUDY_REPO_URL" --ref "$STUDY_REF" >> "$GITHUB_STEP_SUMMARY"

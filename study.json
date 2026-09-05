@@ -1,0 +1,6 @@
+{
+  "base_branch": "main",
+  "remote": "origin",
+  "default_daily_goal": 5,
+  "default_language": "python"
+}

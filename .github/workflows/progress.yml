@@ -1,0 +1,33 @@
+name: Study progress
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # 매일 한국 시간 00:15. 예약 실행은 GitHub 사정에 따라 지연될 수 있습니다.
+    - cron: '15 15 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: study-progress
+  cancel-in-progress: false
+
+jobs:
+  progress:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Build dashboard from merged records
+        env:
+          STUDY_REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+        run: python study.py report --repo-url "$STUDY_REPO_URL" >> "$GITHUB_STEP_SUMMARY"
+      - name: Publish dashboard to progress branch
+        run: python scripts/publish_progress.py
