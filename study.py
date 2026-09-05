@@ -25,6 +25,7 @@ LANGUAGES = {
     'swift': ('solution.swift', '// TODO: 풀이를 작성하세요.\n'),
     'rust': ('solution.rs', '// TODO: 풀이를 작성하세요.\n'),
 }
+UNSET = object()
 
 
 def require(condition, message):
@@ -51,6 +52,29 @@ def valid_user(value):
 def positive(value):
     require(type(value) is int and value > 0, '목표는 1 이상의 정수입니다.')
     return value
+
+
+def valid_goal(value):
+    """A goal is a positive count, or None for self-directed participation."""
+    if value is None:
+        return None
+    return positive(value)
+
+
+def command_goal(value):
+    """Parse the human-facing goal argument while keeping validation errors readable."""
+    if isinstance(value, str) and value.lower() == 'none':
+        return None
+    try:
+        return positive(int(value))
+    except (TypeError, ValueError):
+        raise ValueError('목표는 1 이상의 정수 또는 none입니다.')
+
+
+def goal_progress(done, goal):
+    if goal is None:
+        return f'완료 **{done}건** · 자율 기록'
+    return f'완료 **{done} / {goal}** · ' + ('목표 달성 ✅' if done >= goal else '진행 중')
 
 
 def read_json(path):
@@ -140,7 +164,7 @@ def profiles():
         days = []
         for item in goals:
             days.append(valid_date(item['from']))
-            positive(item['daily_goal'])
+            valid_goal(item['daily_goal'])
         require(days == sorted(set(days)) and days[0] == data['joined'], f'{path}: 목표 적용일 순서/시작일을 확인하세요.')
         result[user] = data
     return result
@@ -148,7 +172,7 @@ def profiles():
 
 def goal_at(profile, day):
     goals = [item['daily_goal'] for item in profile['goals'] if item['from'] <= day]
-    return goals[-1] if goals else 0
+    return goals[-1] if goals else None
 
 
 def records():
@@ -173,7 +197,7 @@ def validate_record(folder, data, members, completed=False):
         require(key in data, f'{folder}: {key} 누락')
     user, day = valid_user(data['user']), valid_date(data['date'])
     require(user in members, f'{folder}: 참여자 등록이 없습니다.')
-    require(goal_at(members[user], day) > 0, f'{folder}: 참여 시작일 전 기록입니다.')
+    require(day >= members[user]['joined'], f'{folder}: 참여 시작일 전 기록입니다.')
     require(isinstance(data['title'], str) and data['title'].strip() and '\n' not in data['title'], f'{folder}: 제목이 필요합니다.')
     require(isinstance(data['tags'], list) and all(isinstance(tag, str) for tag in data['tags']), f'{folder}: tags는 문자열 배열입니다.')
     require(data.get('minutes') is None or (type(data['minutes']) is int and data['minutes'] >= 0), f'{folder}: minutes는 0 이상의 정수입니다.')
@@ -222,7 +246,7 @@ def daily_markdown(user, day, rows, members):
     goal = goal_at(members[user], day)
     if any(record_type(data) == 'note' for _, data in rows):
         counts = Counter(record_type(data) for _, data in rows if is_complete(data))
-        lines = [f'# {day} · {user}', '', f'완료 **{done} / {goal}** · ' + ('목표 달성 ✅' if done >= goal else '진행 중'), '',
+        lines = [f'# {day} · {user}', '', goal_progress(done, goal), '',
                  f'코딩 문제 {counts["problem"]}건 · 학습 정리 {counts["note"]}건 (완료 기록 1개 = 목표 1건)', '',
                  '<!-- study.py 자동 생성: 각 기록의 README를 수정하세요. -->', '',
                  '| 유형 | 기록 | 상태 | 코드 / 본문 |', '| --- | --- | --- | --- |']
@@ -231,7 +255,7 @@ def daily_markdown(user, day, rows, members):
             lines.append(f"| {type_label(data)} | [{md(data['title'])}]({folder.name}/README.md) | {data['status']} | [보기]({folder.name}/{target}) |")
         return '\n'.join(lines) + '\n'
     # Preserve existing problem-only indexes so old records need no migration.
-    lines = [f'# {day} · {user}', '', f'완료 **{done} / {goal}** · ' + ('목표 달성 ✅' if done >= goal else '진행 중'), '',
+    lines = [f'# {day} · {user}', '', goal_progress(done, goal), '',
              '<!-- study.py 자동 생성: 문제별 README를 수정하세요. -->', '',
              '| 문제 | 언어 | 상태 | 코드 |', '| --- | --- | --- | --- |']
     for folder, data in rows:
@@ -249,9 +273,9 @@ def refresh(user, day):
 def cmd_init(args):
     config = settings()
     user = valid_user(args.user.lower())
-    positive(args.goal if args.goal is not None else config['default_daily_goal'])
+    goal = valid_goal(config['default_daily_goal']) if args.goal is UNSET else command_goal(args.goal)
     write_json(ROOT / '.study/config.json', {'user': user, 'language': args.lang or config['default_language'],
-                                          'daily_goal': args.goal if args.goal is not None else config['default_daily_goal']})
+                                          'daily_goal': goal})
     print(f'{user} 로컬 설정 완료. 첫 new 또는 note 실행 시 참여자 파일을 생성합니다. 기존 참여자의 목표 변경은 goal 명령을 사용하세요.')
 
 
@@ -270,10 +294,10 @@ def member_for_new_record(config, day):
     user = config['user']
     members = profiles()
     if user not in members:
-        profile = {'user': user, 'joined': day, 'goals': [{'from': day, 'daily_goal': positive(config['daily_goal'])}]}
+        profile = {'user': user, 'joined': day, 'goals': [{'from': day, 'daily_goal': valid_goal(config['daily_goal'])}]}
     else:
         profile = members[user]
-        require(goal_at(profile, day) > 0, '참여 시작일 전입니다. members 파일의 시작일을 먼저 조정하세요.')
+        require(day >= profile['joined'], '참여 시작일 전입니다. members 파일의 시작일을 먼저 조정하세요.')
     return profile
 
 
@@ -361,12 +385,12 @@ def cmd_done(args):
 
 def cmd_goal(args):
     user, day = local()['user'], valid_date(args.start)
-    positive(args.count)
+    goal = command_goal(args.count)
     members = profiles()
     require(user in members, '첫 new 또는 note 실행으로 참여자를 등록한 뒤 목표를 변경하세요.')
     profile = members[user]
     require(day >= profile['joined'], '참여 시작일 이후 날짜를 사용하세요.')
-    profile['goals'] = sorted([g for g in profile['goals'] if g['from'] != day] + [{'from': day, 'daily_goal': args.count}], key=lambda g: g['from'])
+    profile['goals'] = sorted([g for g in profile['goals'] if g['from'] != day] + [{'from': day, 'daily_goal': goal}], key=lambda g: g['from'])
     write_json(ROOT / 'members' / f'{user}.json', profile)
     for record_day in sorted({d['date'] for _, d in records() if d['user'] == user and d['date'] >= day}):
         refresh(user, record_day)
@@ -443,12 +467,12 @@ def cmd_prepare(args):
     folder = daily_path(user, day).relative_to(ROOT).as_posix()
     branch = f'study/{user}/{day}'
     require(git('branch', '--show-current') == branch, f'{branch} 브랜치에서 실행하세요. 현재 브랜치의 변경을 먼저 확인하세요.')
-    title = f'[{day}] {user} · {len(rows)}/{goal}건'
+    title = f'[{day}] {user} · {len(rows)}' + ('건 (자율)' if goal is None else f'/{goal}건')
     repo = repository_url()
     def record_link(label, path):
         return f'[{label}]({repo}/blob/{quote(branch, safe="")}/{path})' if repo else f'{label}: `{path}`'
     lines = [f'## {title}', '', f'- 일일 기록: {record_link(day + " / " + user, folder + "/README.md")}',
-             f'- 완료 / 목표: **{len(rows)} / {goal}**',
+             f'- 완료 / 목표: **{len(rows)}건 / 자율**' if goal is None else f'- 완료 / 목표: **{len(rows)} / {goal}**',
              f'- 추천 리뷰어: {reviewer or "다른 참여자 등록 후 표시됩니다"}', '',
              '| 유형 | 기록 | 코드 / 본문 |', '| --- | --- | --- |']
     for path, data in rows:
@@ -465,7 +489,7 @@ def cmd_prepare(args):
     output = ROOT / '.study/PR.md'
     output.parent.mkdir(exist_ok=True)
     output.write_text('\n'.join(lines), encoding='utf-8')
-    if len(rows) < goal:
+    if goal is not None and len(rows) < goal:
         print('목표 미달: 제출은 허용합니다. PR에 이유나 다음 계획을 적어주세요.')
     print(f'PR 본문 생성: {output.relative_to(ROOT)}')
     print(f'git add {folder} members/{user}.json')
@@ -487,12 +511,13 @@ def dashboard(day, days=14, repo_url=None, ref=None):
         return f'{repo_url.rstrip("/")}/blob/{quote(ref or settings()["base_branch"], safe="")}/{path}' if repo_url else f'../{path}'
     lines = ['# 스터디 학습 현황', '', f'기준일: **{day} (KST)** · 완료는 자기 신고', '',
              '현재 체크아웃된 기록을 집계합니다. progress 브랜치의 보고서는 main에 합쳐진 기록 기준입니다.', '',
-             '목표 단위는 완료 기록 수입니다. 코딩 문제 1개 또는 학습 정리 1개를 각각 1건으로 셉니다.', '',
-             '✅ 목표 달성 · 🔸 일부 완료 · — 완료 없음 · · 참여 전', '',
+             '목표 단위는 완료 기록 수입니다. 코딩 문제 1개 또는 학습 정리 1개를 각각 1건으로 셉니다. 자율 참여자는 완료 건수만 표시합니다.', '',
+             '✅ 목표 달성 · 🔸 일부 완료 · — 완료 없음 · 자율 자율 기록 · · 참여 전', '',
              '| 참여자 | 오늘 완료 / 목표 | 누적 완료 |', '| --- | --- | --- |']
     for user, profile in members.items():
         goal = goal_at(profile, day)
-        lines.append(f'| {user} | {counts[user, day]} / {goal if goal else "참여 전"} | {totals[user]} |')
+        current = '참여 전' if day < profile['joined'] else f'{counts[user, day]}건 / 자율' if goal is None else f'{counts[user, day]} / {goal}'
+        lines.append(f'| {user} | {current} | {totals[user]} |')
     if not members:
         lines += ['', '아직 등록된 참여자가 없습니다. 첫 기록을 올리면 여기에 표시됩니다.']
     if members:
@@ -509,7 +534,7 @@ def dashboard(day, days=14, repo_url=None, ref=None):
             for user in names:
                 goal = goal_at(members[user], current)
                 count = counts[user, current]
-                cell = '·' if not goal else f'{"✅" if count >= goal else "🔸" if count else "—"} {count}/{goal}'
+                cell = '·' if current < members[user]['joined'] else f'자율 {count}건' if goal is None else f'{"✅" if count >= goal else "🔸" if count else "—"} {count}/{goal}'
                 if count:
                     path = daily_path(user, current).relative_to(ROOT).as_posix() + '/README.md'
                     cell = f'[{cell}]({link(path)})'
@@ -555,7 +580,7 @@ def parser():
     commands['init'] = init
     init.add_argument('user')
     init.add_argument('--lang', choices=LANGUAGES)
-    init.add_argument('--goal', type=int)
+    init.add_argument('--goal', default=UNSET, metavar='건수|none', help='일일 목표. none이면 자율 기록')
     init.set_defaults(func=cmd_init)
     start = sub.add_parser('start', help='최신 main에서 오늘 개인 브랜치 생성')
     commands['start'] = start
@@ -582,9 +607,9 @@ def parser():
     done.add_argument('target', help='문제 URL 또는 note-01 같은 학습 정리 폴더명')
     done.add_argument('--minutes', type=int)
     done.set_defaults(func=cmd_done)
-    goal = sub.add_parser('goal', help='적용일별 일일 목표 변경')
+    goal = sub.add_parser('goal', help='적용일별 일일 목표 변경 (none: 자율 기록)')
     commands['goal'] = goal
-    goal.add_argument('count', type=int)
+    goal.add_argument('count', metavar='건수|none', help='1 이상의 목표 건수 또는 none')
     goal.add_argument('--from', dest='start', default=today())
     goal.set_defaults(func=cmd_goal)
     index = sub.add_parser('index', help='일일 목록 재생성')
