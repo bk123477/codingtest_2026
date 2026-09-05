@@ -49,7 +49,13 @@ python3 study.py init 내GitHub아이디 --goal 1
 python3 study.py init 내GitHub아이디 --goal none
 ```
 
-`내GitHub아이디`는 실제 GitHub 아이디로 바꿉니다. 이 설정은 내 컴퓨터의 `.study/config.json`에만 저장되며 GitHub에는 올라가지 않습니다. `--goal`을 생략하면 기본 목표는 5건입니다. 목표 없이 기록하려면 반드시 `--goal none`을 씁니다.
+`init`은 참여자마다 처음 한 번 반드시 실행해야 합니다. GitHub 아이디는 이메일 주소나 프로필의 표시 이름이 아니라, GitHub 프로필 URL 마지막 부분의 사용자명입니다. 예를 들어 프로필 주소가 `https://github.com/bk123477`이면 `bk123477`을 입력합니다.
+
+```bash
+python3 study.py init bk123477 --lang python --goal 5
+```
+
+이 설정은 내 컴퓨터의 `.study/config.json`에만 저장되며 GitHub에는 올라가지 않습니다. `--goal`을 생략하면 기본 목표는 5건입니다. 목표 없이 기록하려면 반드시 `--goal none`을 씁니다. `init`을 완료한 뒤에 `start`로 작업 브랜치를 만들고 첫 문제나 학습 정리를 시작합니다.
 
 ### 1. 오늘의 작업 브랜치 만들기
 
