@@ -1,0 +1,11 @@
+{
+  "type": "note",
+  "note_id": "git-branch",
+  "user": "example-user",
+  "date": "2026-09-05",
+  "title": "Git 브랜치와 merge 정리",
+  "status": "completed",
+  "tags": ["Git"],
+  "references": [],
+  "minutes": 30
+}

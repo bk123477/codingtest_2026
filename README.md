@@ -1,160 +1,161 @@
 # codingtest_2026
 
-매일 문제를 풀고, 하루 하나의 PR로 서로의 풀이를 리뷰하는 스터디입니다.
+매일 **코딩 문제를 풀거나 학습 내용을 정리**하고, 하루에 PR 하나를 올려 서로 리뷰하는 스터디입니다.
 
-[학습 현황](https://github.com/bk123477/codingtest_2026/tree/progress) · [날짜별 기록](records/) · [참여 방법](CONTRIBUTING.md) · [완성 예시](examples/h-index/) · [설계 이유](docs/design.md) · [운영자 설정](docs/setup.md)
+처음 참여한다면 아래 **오늘의 첫 기록**만 순서대로 따라 하면 됩니다.
 
-> 학습 현황은 이 구성이 `main`에 올라간 뒤 **Study progress** Actions가 처음 성공하면 열립니다.
-> 현재 참여자는 미등록이며, 기본 목표는 하루 5문제입니다. 각자 변경할 수 있습니다.
+[학습 현황](https://github.com/bk123477/codingtest_2026/tree/progress) · [템플릿 상세 설명](docs/templates.md) · [참여 중 문제 해결](CONTRIBUTING.md) · [운영자 안내](docs/setup.md) · [코딩 문제 예시](examples/h-index/) · [학습 정리 예시](examples/learning-note/)
 
-## 이렇게 공부합니다
+> 현재는 참여자와 실제 기록이 없습니다. 이 구성이 main에 올라간 뒤 GitHub Actions가 성공하면 학습 현황 페이지가 생성됩니다.
+
+## 이 스터디에서 하는 일
 
 ```mermaid
 flowchart LR
-    A[최신 main] --> B[개인·날짜 브랜치]
-    B --> C[문제 풀이와 기록]
-    C --> D[commit / push]
-    D --> E[하루 하나의 PR]
-    E --> F[동료 리뷰와 수정]
-    F --> G[main에 merge]
-    G --> H[학습 현황 자동 갱신]
+    A[최신 main에서 오늘 브랜치 생성] --> B{오늘 기록 선택}
+    B -->|코딩 문제| C[new로 템플릿 생성]
+    B -->|학습 정리| D[note로 템플릿 생성]
+    C --> E[생성된 파일 작성]
+    D --> E
+    E --> F[done으로 완료 처리]
+    F --> G[prepare로 PR 본문 생성]
+    G --> H[직접 commit·push·PR 생성]
+    H --> I[동료 리뷰]
+    I --> J[main merge]
+    J --> K[학습 현황 자동 갱신]
 ```
 
-브랜치는 `study/아이디/YYYY-MM-DD`, 폴더는 `records/YYYY/MM/DD/아이디/플랫폼-문제번호/`를 사용합니다.
-4명이 하루 5문제를 풀면 **20개의 문제 폴더와 4개의 일일 PR**이 생깁니다.
-전날 PR이 리뷰 중이어도 다음 날은 최신 `main`에서 새 브랜치를 만들 수 있습니다.
+하루에 여러 기록을 작성해도 PR은 하나입니다. 코딩 문제와 학습 정리를 같은 PR에 함께 넣어도 됩니다. 각 참여자는 `study/아이디/YYYY-MM-DD` 형식의 자기 브랜치에서 작업합니다.
 
-## 처음 한 번
+## 참여자: 오늘의 첫 기록
 
-Python **3.10 이상**과 Git이 필요합니다. 외부 Python 패키지 설치는 없습니다.
-Windows에서는 아래 `python3`를 `py -3` 또는 `python`으로 바꾸면 됩니다.
+### 0. 준비하기
+
+Python 3.10 이상과 Git이 필요합니다. 별도 Python 패키지를 설치하지 않습니다. Windows에서는 아래의 `python3`를 `py -3` 또는 `python`으로 바꿔 실행하세요.
 
 ```bash
 git clone https://github.com/bk123477/codingtest_2026.git
 cd codingtest_2026
+
+# 코딩 문제를 하루 5개 목표로 하는 경우
 python3 study.py init 내GitHub아이디 --lang python --goal 5
+
+# 학습 정리만 하루 1건 목표로 하는 경우
+python3 study.py init 내GitHub아이디 --goal 1
 ```
 
-아이디는 실제 GitHub 아이디로 바꿔주세요. 소문자로 저장합니다.
-설정은 커밋되지 않는 `.study/config.json`에 저장됩니다.
-첫 문제를 만들면 `members/아이디.json`도 자동 생성되므로 첫 풀이와 함께 커밋하면 됩니다.
-팀원 초대와 리뷰 필수 설정은 운영자가 [설정 안내](docs/setup.md)를 따라 한 번 진행합니다.
+`내GitHub아이디`는 실제 GitHub 아이디로 바꿉니다. 이 설정은 내 컴퓨터의 `.study/config.json`에만 저장되며 GitHub에는 올라가지 않습니다.
 
-## 매일 사용하는 명령
-
-**1. 오늘 브랜치를 만듭니다.**
+### 1. 오늘의 작업 브랜치 만들기
 
 ```bash
 python3 study.py start
 ```
 
-최신 `origin/main`에서 `study/아이디/한국날짜`를 생성합니다. 커밋하지 않은 작업이 있으면 중단합니다.
-이미 만든 오늘 브랜치로 돌아가려면 `git switch study/아이디/YYYY-MM-DD`를 사용하세요.
+이 명령은 최신 `main`을 기준으로 `study/내GitHub아이디/오늘날짜` 브랜치를 만듭니다. “미커밋 변경이 있습니다”라는 메시지가 나오면, 전날 작업을 먼저 commit하거나 정리한 뒤 다시 실행하세요.
 
-**2. URL과 제목으로 문제 기록을 만듭니다.**
+### 2-A. 코딩 문제를 푸는 경우
 
 ```bash
 python3 study.py new https://school.programmers.co.kr/learn/courses/30/lessons/42747 --title "H-Index" --tags "정렬"
 ```
 
-이미 로컬에서 풀었다면 `--source ./내풀이.py`를 덧붙여 그대로 가져올 수 있습니다.
-URL에서 플랫폼과 문제 번호를 추출하고, 날짜·작성자·언어·태그를 자동 기록합니다.
-문제 제목은 직접 입력합니다. 사이트 로그인이나 크롤링에 의존하지 않습니다.
+아래와 같은 폴더가 만들어집니다.
 
-생성된 `solution.py`에 코드를 작성하고 `README.md`의 **문제 요약·풀이 방법·확인한 예제** 세 항목을 짧게 채웁니다.
-원문 전체를 복사하거나 Markdown 안에 코드를 또 붙여넣을 필요는 없습니다.
+```text
+records/YYYY/MM/DD/내GitHub아이디/programmers-42747/
+├── README.md      # 문제 요약, 풀이 설명, 확인한 예제
+├── solution.py    # 실제 풀이 코드
+└── meta.json      # 자동 집계 정보
+```
 
-**3. 채점 사이트에서 정답을 확인하고 완료 처리합니다.**
+`solution.py`에 코드를 작성하고, `README.md`에서 `TODO:`가 붙은 문제 요약·풀이 방법·확인한 예제 세 항목을 채웁니다. 이미 로컬에서 풀어 둔 코드가 있다면 `--source ./내풀이.py`를 명령 끝에 붙이면 됩니다.
+
+정답을 채점 사이트에서 확인한 뒤 완료 처리합니다.
 
 ```bash
 python3 study.py done https://school.programmers.co.kr/learn/courses/30/lessons/42747 --minutes 20
 ```
 
-필수 설명과 코드가 비어 있으면 완료 처리되지 않습니다. 일일 README가 자동 갱신됩니다.
-이 과정을 그날 푸는 문제마다 반복합니다. `--minutes`는 생략해도 됩니다.
+### 2-B. 코테 대신 공부한 내용을 정리하는 경우
 
-**4. 하루의 PR을 준비합니다.**
+```bash
+python3 study.py note --title "Git 브랜치와 merge 정리" --tags "Git"
+```
+
+아래 폴더가 만들어집니다. 같은 날 두 번째 정리는 `note-02`가 됩니다.
+
+```text
+records/YYYY/MM/DD/내GitHub아이디/note-01/
+├── README.md      # 학습 주제/목표, 정리 내용, 배운 점
+└── meta.json      # 자동 집계 정보
+```
+
+`note-01/README.md`를 열어 `TODO:`가 붙은 학습 주제/목표·정리 내용·배운 점 세 항목을 작성합니다. 강의·책 요약, Git이나 CS 개념 정리, 프로젝트에서 배운 점, 실습 기록을 모두 남길 수 있습니다. 문제 URL과 코드 파일은 필요 없습니다.
+
+기존에 작성한 Markdown 또는 텍스트 글이 있다면 가져올 수 있습니다.
+
+```bash
+python3 study.py note --title "오늘의 학습 정리" --source ./내정리.md
+```
+
+원본 파일은 건드리지 않고 기록 폴더의 `notes.md`로 복사합니다. 생성된 README에서 학습 목표와 배운 점만 추가로 작성하면 됩니다.
+
+내용을 검토한 뒤 완료 처리합니다. `note-01`은 생성 명령이 출력한 폴더명입니다.
+
+```bash
+python3 study.py done note-01 --minutes 30
+```
+
+### 3. 하루의 PR 만들기
+
+그날의 모든 기록을 `done`으로 완료 처리한 뒤 실행합니다.
 
 ```bash
 python3 study.py prepare
 ```
 
-문제 목록·목표 달성 현황·추천 리뷰어를 담은 `.study/PR.md`와 실행할 Git 명령이 출력됩니다.
-출력된 `git add`, `git commit`, `git push`를 직접 실행하세요.
-GitHub에서 **Compare & pull request**를 누르고 `.study/PR.md` 내용을 붙여넣으면 됩니다.
-GitHub CLI를 사용한다면 출력된 `gh pr create ... --body-file .study/PR.md`로 생성할 수도 있습니다.
+이 명령은 기록을 검사하고, `.study/PR.md`에 PR 본문을 만들고, 다음에 실행할 `git add`, `git commit`, `git push` 명령을 화면에 보여줍니다. 출력된 Git 명령을 차례로 실행합니다.
 
-**5. 리뷰를 받고 같은 브랜치에 수정 커밋을 push합니다.**
+GitHub 웹사이트에서 **Compare & pull request**를 누르고 `.study/PR.md` 내용을 PR 본문에 붙여넣습니다. 리뷰 의견이 오면 같은 브랜치에서 파일을 고치고 다시 commit/push합니다. 승인 후 **Squash and merge**를 선택하면 해당 날짜의 기록이 main에 합쳐집니다.
 
-리뷰어는 PR의 **Files changed**에서 코드 줄에 의견을 남기고 **Submit review**로 리뷰를 제출합니다.
-승인 후 **Squash and merge**하고 작업 브랜치를 삭제합니다. 다음 날에는 다시 `start`를 실행합니다.
+## 템플릿은 어떻게 쓰이나요?
 
-## 기록 구조
+`templates/problem.md`와 `templates/note.md`는 공용 원본입니다. 평소에는 이 파일을 수정하지 않습니다.
 
-```text
-records/
-└── 2026/09/05/
-    ├── alice/
-    │   ├── README.md                    # 오늘 완료/목표와 문제 목록 (자동 생성)
-    │   ├── programmers-42747/
-    │   │   ├── README.md                # 문제 요약, 풀이, 확인한 예제, 회고
-    │   │   ├── solution.py              # 실행하고 줄 단위로 리뷰할 코드
-    │   │   └── meta.json                # 자동 집계용 정보
-    │   └── baekjoon-1000/...
-    └── bob/...
-members/아이디.json                        # 참여 시작일과 목표 이력
-.study/                                  # 개인 설정·PR 본문·로컬 보고서 (Git 제외)
-templates/problem.md                     # 공용 기록 템플릿
-```
+`new` 또는 `note` 명령이 원본을 읽고 제목·날짜·작성자 같은 정보를 채워 **내 기록 폴더의 README.md**를 새로 만듭니다. 사용자는 생성된 README의 TODO만 자기 내용으로 바꾸면 됩니다.
 
-위 아이디와 폴더는 구조를 설명하기 위한 예시입니다. 실제 공부 실적으로 등록하지 않았습니다.
-같은 문제를 다른 사람이 풀어도 충돌하지 않습니다. 같은 사람이 같은 날 같은 문제를 다시 생성하면 덮어쓰지 않습니다.
-다른 날짜의 재풀이는 새로운 학습 기록으로 집계합니다.
+| 기록 | 명령 | 직접 작성할 내용 | 완료 기준 |
+| --- | --- | --- | --- |
+| 코딩 문제 | `new 문제URL --title "제목"` | 문제 요약, 풀이 방법, 확인한 예제, 코드 | `done 문제URL` |
+| 학습 정리 | `note --title "주제"` | 학습 주제/목표, 정리 내용, 배운 점 | `done note-01` |
 
-## 자동으로 처리되는 것
+더 자세한 예시와 파일별 역할은 [템플릿 상세 설명](docs/templates.md)에 있습니다. 템플릿 변경은 이후 새로 만드는 기록에만 적용되며, 기존 기록을 덮어쓰지 않습니다.
 
-| 작업 | 처리 방법 |
+## 무엇이 자동이고, 무엇을 직접 하나요?
+
+| 자동 처리 | 참여자가 직접 하는 일 |
 | --- | --- |
-| 문제 폴더·코드 파일·기록 양식 | `new` |
-| 기존 코드 가져오기 | `new --source 파일` |
-| 완료 상태·일일 문제 목록 | `done` |
-| 개인 목표 변경과 적용일 이력 | `goal 3 --from 2026-09-10` |
-| 일일 PR 본문·추천 리뷰어 | `prepare` |
-| 잘못된 기록·미완성 제출·다른 사람/날짜 파일 혼입 검사 | push / PR 시 Actions |
-| 사람별 오늘 실적·최근 14일 달성표·같은 문제의 여러 풀이 | `main` push 후 `progress` 브랜치 갱신 |
-| 새 날짜의 미제출 현황 반영 | 매일 한국 시간 00:15 예약 갱신 |
+| 폴더·README·코드 파일·메타데이터 생성 | 풀이 코드 또는 학습 정리 작성 |
+| 날짜·작성자·문제 URL/번호 입력 | 문제 정답 또는 정리 내용 확인 |
+| 일일 기록 목록과 PR 본문 생성 | `done`, commit, push, PR 생성 |
+| 기록 형식과 PR 파일 범위 검사 | 동료 PR 리뷰와 피드백 반영 |
+| merge된 기록의 학습 현황 갱신 | PR 승인과 merge |
 
-목표를 못 채운 날도 PR을 제출할 수 있습니다. 집계에는 미달로 표시합니다.
-CI는 기록 형식과 제출 범위를 검사하며 **정답 여부를 채점하지 않습니다**.
-채점 사이트에서 확인한 뒤 `done` 처리하는 방식입니다.
-`progress`에는 merge된 풀이만 표시됩니다. 아직 리뷰 중인 공부는 PR에서 확인합니다.
+자동화는 정답을 채점하거나 학습 정리의 사실관계를 판정하지 않습니다. 코딩 문제는 채점 사이트에서 확인하고, 학습 정리는 작성자와 리뷰어가 내용을 검토합니다.
 
-## 추가 사용법
+목표의 단위는 완료한 기록 수입니다. 문제 1개 또는 학습 정리 1개를 각각 1건으로 셉니다. 예를 들어 목표가 2건일 때 문제 1개와 정리 1개를 완료하면 2/2입니다. 현황에는 두 종류의 누적 건수도 따로 표시됩니다.
 
-```bash
-# 다른 언어 / 난이도
-python3 study.py new https://www.acmicpc.net/problem/1000 --title "A+B" --lang cpp --level "Bronze V"
+## GitHub 용어를 짧게 보면
 
-# 지난 날짜 기록: start, new, done, prepare에 같은 --date를 붙입니다.
-python3 study.py start --date 2026-09-05
+| 용어 | 이 스터디에서의 의미 |
+| --- | --- |
+| `main` | 리뷰를 마친 기록이 모이는 기준 브랜치 |
+| 브랜치 | 내 작업을 다른 사람 작업과 분리해 두는 공간 |
+| commit | 현재 파일 변경을 Git에 저장하는 단위 |
+| push | 내 컴퓨터의 commit을 GitHub에 올리는 작업 |
+| PR | 내 브랜치의 변경을 main에 합쳐 달라고 요청하는 페이지 |
+| review | PR에서 코드나 문서에 의견을 남기고 승인하는 과정 |
+| merge | 승인된 PR의 변경을 main에 반영하는 작업 |
 
-# 다음 날짜부터 하루 3문제로 변경 (현재 작업 브랜치에서 커밋)
-python3 study.py goal 3 --from 2026-09-10
-
-# 수동 메타데이터 수정 후 일일 목록 갱신
-python3 study.py index --date 2026-09-05
-
-# 로컬 검증 / 현황 생성
-python3 study.py check
-python3 study.py report
-
-# 자동화 도구 테스트
-python3 -m unittest discover -s tests -v
-```
-
-지원 플랫폼: 프로그래머스, 백준, LeetCode.
-지원 언어: Python, JavaScript, TypeScript, Java, C++, C, Kotlin, Go, Swift, Rust.
-언어 옵션은 `python`, `javascript`, `typescript`, `java`, `cpp`, `c`, `kotlin`, `go`, `swift`, `rust`입니다.
-채점 사이트의 실행 규칙에 맞는 함수/클래스/입출력 코드는 직접 작성합니다.
-
-템플릿만 개인 레포에서 쓰거나, fork로 참여하는 방법은 [참여 안내](CONTRIBUTING.md#개인-레포에서도-사용하기)에 정리했습니다.
+작업 중 막히는 상황, 전날 PR이 남아 있을 때의 처리, fork 참여 방법은 [참여 중 문제 해결](CONTRIBUTING.md)을 보세요. 팀원 초대, Actions 확인, main 보호 규칙 설정은 [운영자 안내](docs/setup.md)에 있습니다.
