@@ -4,6 +4,8 @@
 
 처음 참여한다면 아래 **오늘의 첫 기록**만 순서대로 따라 하면 됩니다.
 
+명령 입력과 문서 정리를 코딩 에이전트에게 맡기고 싶다면 [에이전트로 기록하기](#코딩-에이전트로-기록하기)를 보세요.
+
 [학습 현황](https://github.com/bk123477/codingtest_2026/tree/progress) · [템플릿 상세 설명](docs/templates.md) · [참여 중 문제 해결](CONTRIBUTING.md) · [운영자 안내](docs/setup.md) · [코딩 문제 예시](examples/h-index/) · [학습 정리 예시](examples/learning-note/)
 
 > 현재는 참여자와 실제 기록이 없습니다. 이 구성이 main에 올라간 뒤 GitHub Actions가 성공하면 학습 현황 페이지가 생성됩니다.
@@ -82,7 +84,7 @@ records/YYYY/MM/DD/내GitHub아이디/programmers-42747/
 
 `solution.py`에 코드를 작성하고, `README.md`에서 `TODO:`가 붙은 문제 요약·풀이 방법·확인한 예제 세 항목을 채웁니다. 이미 로컬에서 풀어 둔 코드가 있다면 `--source ./내풀이.py`를 명령 끝에 붙이면 됩니다.
 
-정답을 채점 사이트에서 확인한 뒤 완료 처리합니다.
+정답을 채점 사이트에서 확인한 뒤 직접 완료 처리합니다.
 
 ```bash
 python3 study.py done https://school.programmers.co.kr/learn/courses/30/lessons/42747 --minutes 20
@@ -143,6 +145,59 @@ git branch -d study/내GitHub아이디/완료날짜
 ```
 
 `-d`는 merge되지 않았다고 판단한 브랜치를 지우지 않고 멈춥니다. Squash merge를 쓰면 실제 PR은 merge됐어도 Git이 이 메시지를 낼 수 있습니다. GitHub에서 PR이 **Merged**인지 확인한 뒤에만 `git branch -D study/내GitHub아이디/완료날짜`로 로컬 브랜치를 지울 수 있습니다. GitHub의 **Settings → General → Pull Requests → Automatically delete head branches**를 운영자가 켜면 merge 뒤 원격 브랜치를 자동으로 삭제할 수 있습니다.
+
+## 코딩 에이전트로 기록하기
+
+파일을 읽고 수정하며 터미널 명령을 실행할 수 있는 코딩 에이전트에 기록 작업을 맡길 수 있습니다. 참여자는 문제 링크와 풀이 코드 또는 학습 메모를 전달하고, 에이전트는 `new`/`note` 실행과 README 정리, 검증을 담당합니다. 따라서 긴 명령을 매번 직접 입력할 필요가 없습니다.
+
+이 저장소를 에이전트의 작업 폴더로 열고, **루트의 [AGENTS.md](AGENTS.md)를 먼저 읽어 달라**고 요청하세요. Codex, Antigravity 등 사용하는 도구에서 파일을 첨부하거나 경로를 지정해 전달할 수 있습니다. 도구가 이 파일을 자동으로 읽는다고 가정하지 않고, 요청에 명시하는 방식으로 안내합니다.
+
+첫 사용 시에는 아래처럼 설정도 맡길 수 있습니다. `내GitHub사용자명`을 실제 사용자명으로 바꾸세요.
+
+```text
+AGENTS.md를 먼저 읽고 스터디 참여 설정을 해줘.
+내 GitHub 사용자명은 내GitHub사용자명이고, 기본 언어는 Python이야.
+문제와 학습 정리를 섞어서 기록하고 목표는 없이 참여할게.
+기존 로컬 설정이 있다면 확인해서 알려줘.
+```
+
+이미 푼 문제를 기록할 때는 풀이 코드를 요청문에 직접 붙여 넣는 방식이 가장 간단합니다. 아래 예시의 주소·제목·코드를 본인 것으로 바꿉니다. 채점 확인 문장은 실제 정답을 확인했을 때만 포함하세요.
+
+````text
+AGENTS.md를 읽고 오늘 날짜의 문제 기록을 만들어줘.
+문제 링크: https://school.programmers.co.kr/learn/courses/30/lessons/42747
+제목: H-Index
+언어: Python
+풀이 코드:
+```python
+def solution(citations):
+    citations.sort(reverse=True)
+    for i, citation in enumerate(citations, start=1):
+        if citation < i:
+            return i - 1
+    return len(citations)
+```
+채점 사이트에서 정답을 확인했어.
+이 코드를 기록 폴더의 solution.py에 저장하고 실제 풀이에 맞게 README를 작성한 뒤 검증해줘.
+정보가 충분하면 done과 오늘 PR 본문 준비까지 해줘.
+commit과 push는 내가 연습할 수 있게 실행할 명령을 알려줘.
+````
+
+이미 저장된 코드 파일을 재사용하고 싶을 때만 `내 풀이 파일: ../solutions/h_index.py`와 함께 `--source` 방식을 사용하면 됩니다. 코드가 길거나 여러 문제에서 반복해서 사용할 때 유용합니다.
+
+학습 정리는 공부한 메모를 파일로 제공하거나 대화에 붙여넣으면 됩니다.
+
+```text
+AGENTS.md를 읽고 오늘 날짜의 학습 정리를 만들어줘.
+제목: Git 브랜치와 merge 정리
+내 메모 파일: ../notes/git.md
+이 메모를 바탕으로 README를 작성하고 형식을 검증해줘.
+완료 처리 전에 내가 내용을 읽어볼 수 있게 파일 위치를 알려줘.
+```
+
+초안을 읽은 뒤에는 “내용 확인했어. 완료 처리하고 오늘 PR 본문을 준비해줘”라고 이어서 요청할 수 있습니다. 풀이 파일이나 메모에 없는 채점 결과·학습 경험은 에이전트가 임의로 채우지 않도록 안내해 두었습니다. 문제와 정리 여러 개를 한 번에 전달해도 같은 날짜의 PR 하나로 묶습니다.
+
+Git 명령 실행도 맡기고 싶으면 “검증 후 commit, push하고 PR도 만들어줘”처럼 원하는 범위를 적으세요. 실제 실행은 해당 도구의 터미널 권한과 GitHub 인증이 필요합니다. `AGENTS.md` 자체는 실행 프로그램이 아니며, `study.py`에 AI나 유료 API를 추가한 구성은 아닙니다. 사용하는 코딩 에이전트의 요금·이용 한도는 별도입니다.
 
 ## 템플릿은 어떻게 쓰이나요?
 
