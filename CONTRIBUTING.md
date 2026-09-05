@@ -43,12 +43,25 @@ git switch study/내아이디/전날날짜
 다음 날 기록은 미커밋 변경이 없는 상태에서 새로 시작합니다.
 
 ```bash
-git switch main
-git pull origin main
 python3 study.py start
 ```
 
-`start`는 최신 `origin/main`에서 시작하므로 전날 PR의 변경이 오늘 PR에 섞이지 않습니다.
+`start`는 최신 `origin/main`을 fetch한 뒤 시작하므로 전날 PR의 변경이 오늘 PR에 섞이지 않습니다. 새 날짜 브랜치를 만들기 위해 로컬 main을 따로 pull할 필요는 없습니다. 다만 로컬 main을 열어 보거나 수동으로 브랜치를 만들 때는 아래처럼 최신화합니다.
+
+```bash
+git switch main
+git pull --ff-only origin main
+```
+
+merge가 끝난 브랜치는 GitHub의 **Delete branch**로 정리합니다. 기록과 PR 내역은 main과 GitHub에 남습니다. 로컬 브랜치는 main을 최신으로 받은 뒤 아래처럼 지울 수 있습니다.
+
+```bash
+git switch main
+git pull origin main
+git branch -d study/내아이디/완료날짜
+```
+
+Squash merge를 쓰면 `git branch -d`가 거부할 수 있습니다. GitHub에서 해당 PR이 **Merged**인지 먼저 확인한 뒤에만 `git branch -D study/내아이디/완료날짜`로 로컬 브랜치를 정리하세요.
 
 첫 기록 PR이 아직 merge되기 전에 다음 날 기록까지 작성하면 `members/내아이디.json`이 두 브랜치에 생길 수 있습니다. 가능하면 첫 PR을 먼저 merge하세요. 충돌이 나면 최신 main을 합친 뒤 해당 JSON의 가장 이른 `joined` 날짜와 목표 이력을 보존합니다.
 
@@ -73,6 +86,8 @@ python3 study.py prepare --date 2026-09-05
 ```bash
 python3 study.py index --date YYYY-MM-DD
 ```
+
+명령의 옵션이 기억나지 않으면 `python3 study.py help` 또는 `python3 study.py help note`처럼 확인합니다. 기존 `--help` 옵션도 동일하게 사용할 수 있습니다.
 
 ## 개인 레포나 fork로 참여하기
 

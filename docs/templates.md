@@ -5,6 +5,8 @@
 본인의 날짜별 기록 폴더에 새 파일을 만듭니다. 터미널에 출력된 경로의 `README.md`를 IDE에서 열어 작성합니다.
 명령이 편집기를 자동으로 열거나 대화형 입력창을 띄우는 방식은 아닙니다.
 
+매일 `start`는 원격 `origin/main`을 가져와 새 날짜 브랜치의 기준으로 사용합니다. 새 기록을 만들기 위해 로컬 main을 먼저 pull할 필요는 없습니다. 이미 열려 있는 날짜 브랜치는 자동으로 최신 main을 받지 않으므로, 충돌 해결이나 최신 변경 반영이 필요할 때만 `git fetch origin` 후 `git merge origin/main` 또는 GitHub의 **Update branch**를 사용합니다.
+
 ```mermaid
 flowchart TD
     A[오늘 브랜치에서 기록 종류 선택] --> B[new 문제URL --title 제목]

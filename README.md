@@ -52,7 +52,7 @@ python3 study.py init 내GitHub아이디 --goal 1
 python3 study.py start
 ```
 
-이 명령은 최신 `main`을 기준으로 `study/내GitHub아이디/오늘날짜` 브랜치를 만듭니다. “미커밋 변경이 있습니다”라는 메시지가 나오면, 전날 작업을 먼저 commit하거나 정리한 뒤 다시 실행하세요.
+이 명령은 GitHub의 최신 `origin/main`을 가져온 뒤 `study/내GitHub아이디/오늘날짜` 브랜치를 만듭니다. 새 날짜 기록을 시작하기 전에 `git switch main`이나 `git pull`을 따로 실행할 필요는 없습니다. 다만 내 컴퓨터의 `main` 브랜치 자체는 자동으로 갱신되지 않습니다. “미커밋 변경이 있습니다”라는 메시지가 나오면, 전날 작업을 먼저 commit하거나 정리한 뒤 다시 실행하세요.
 
 ### 2-A. 코딩 문제를 푸는 경우
 
@@ -119,6 +119,20 @@ python3 study.py prepare
 
 GitHub 웹사이트에서 **Compare & pull request**를 누르고 `.study/PR.md` 내용을 PR 본문에 붙여넣습니다. 리뷰 의견이 오면 같은 브랜치에서 파일을 고치고 다시 commit/push합니다. 승인 후 **Squash and merge**를 선택하면 해당 날짜의 기록이 main에 합쳐집니다.
 
+### 4. merge한 브랜치 정리하기
+
+하루마다 새 브랜치를 만들기 때문에, merge한 브랜치를 그대로 두면 목록이 계속 쌓입니다. merge할 때 GitHub의 **Delete branch**를 누르면 원격 브랜치가 정리됩니다. 기록 파일은 main에 이미 합쳐졌으므로 지워지지 않고, PR과 리뷰 내역도 GitHub에 남습니다. 다른 참여자의 로컬 브랜치나 로컬 main은 이 설정으로 바뀌지 않습니다.
+
+내 컴퓨터의 완료 브랜치는 main에 merge된 것을 확인한 뒤 정리합니다.
+
+```bash
+git switch main
+git pull origin main
+git branch -d study/내GitHub아이디/완료날짜
+```
+
+`-d`는 merge되지 않았다고 판단한 브랜치를 지우지 않고 멈춥니다. Squash merge를 쓰면 실제 PR은 merge됐어도 Git이 이 메시지를 낼 수 있습니다. GitHub에서 PR이 **Merged**인지 확인한 뒤에만 `git branch -D study/내GitHub아이디/완료날짜`로 로컬 브랜치를 지울 수 있습니다. GitHub의 **Settings → General → Pull Requests → Automatically delete head branches**를 운영자가 켜면 merge 뒤 원격 브랜치를 자동으로 삭제할 수 있습니다.
+
 ## 템플릿은 어떻게 쓰이나요?
 
 `templates/problem.md`와 `templates/note.md`는 공용 원본입니다. 평소에는 이 파일을 수정하지 않습니다.
@@ -131,6 +145,22 @@ GitHub 웹사이트에서 **Compare & pull request**를 누르고 `.study/PR.md`
 | 학습 정리 | `note --title "주제"` | 학습 주제/목표, 정리 내용, 배운 점 | `done note-01` |
 
 더 자세한 예시와 파일별 역할은 [템플릿 상세 설명](docs/templates.md)에 있습니다. 템플릿 변경은 이후 새로 만드는 기록에만 적용되며, 기존 기록을 덮어쓰지 않습니다.
+
+## 명령어 도움말
+
+모든 명령과 옵션은 아래처럼 확인할 수 있습니다.
+
+```bash
+# 전체 명령 목록
+python3 study.py --help
+# 또는
+python3 study.py help
+
+# 특정 명령의 옵션과 예시 확인
+python3 study.py note --help
+# 또는
+python3 study.py help note
+```
 
 ## 무엇이 자동이고, 무엇을 직접 하나요?
 

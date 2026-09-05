@@ -540,17 +540,28 @@ def cmd_report(args):
     print(content)
 
 
+def cmd_help(args):
+    if args.command:
+        args.commands[args.command].print_help()
+    else:
+        args.root_parser.print_help()
+
+
 def parser():
     p = argparse.ArgumentParser(description='코딩 문제·학습 정리 기록과 일일 PR 준비 (Python 3.10+, 외부 패키지 없음)')
     sub = p.add_subparsers(dest='command', required=True)
+    commands = {}
     init = sub.add_parser('init', help='아이디, 기본 언어, 최초 목표를 로컬에 저장')
+    commands['init'] = init
     init.add_argument('user')
     init.add_argument('--lang', choices=LANGUAGES)
     init.add_argument('--goal', type=int)
     init.set_defaults(func=cmd_init)
     start = sub.add_parser('start', help='최신 main에서 오늘 개인 브랜치 생성')
+    commands['start'] = start
     start.set_defaults(func=cmd_start)
     new = sub.add_parser('new', help='문제 URL로 기록 생성')
+    commands['new'] = new
     new.add_argument('url')
     new.add_argument('--title', required=True)
     new.add_argument('--lang', choices=LANGUAGES)
@@ -559,6 +570,7 @@ def parser():
     new.add_argument('--tags', default='')
     new.set_defaults(func=cmd_new)
     note = sub.add_parser('note', help='학습 정리 템플릿 생성 (코드·문제 URL 불필요)')
+    commands['note'] = note
     note.add_argument('--title', required=True)
     note.add_argument('--slug', help='폴더 식별자 (예: git-branch). 생략하면 01부터 자동 번호')
     note.add_argument('--tags', default='')
@@ -566,29 +578,38 @@ def parser():
     note.add_argument('--source', help='기존 UTF-8 Markdown/텍스트 파일을 notes.md로 복사')
     note.set_defaults(func=cmd_note)
     done = sub.add_parser('done', help='필수 설명/코드 확인 후 완료 표시')
+    commands['done'] = done
     done.add_argument('target', help='문제 URL 또는 note-01 같은 학습 정리 폴더명')
     done.add_argument('--minutes', type=int)
     done.set_defaults(func=cmd_done)
     goal = sub.add_parser('goal', help='적용일별 일일 목표 변경')
+    commands['goal'] = goal
     goal.add_argument('count', type=int)
     goal.add_argument('--from', dest='start', default=today())
     goal.set_defaults(func=cmd_goal)
     index = sub.add_parser('index', help='일일 목록 재생성')
+    commands['index'] = index
     index.add_argument('--user')
     index.set_defaults(func=cmd_index)
     prepare = sub.add_parser('prepare', help='일일 PR 본문과 Git 명령 생성')
+    commands['prepare'] = prepare
     prepare.set_defaults(func=cmd_prepare)
     check = sub.add_parser('check', help='기록 형식과 일일 목록 검증')
+    commands['check'] = check
     check.add_argument('--branch')
     check.add_argument('--base')
     check.set_defaults(func=cmd_check)
     report = sub.add_parser('report', help='목표 달성 현황과 문제별 인덱스 생성')
+    commands['report'] = report
     report.add_argument('--days', type=int, default=14)
     report.add_argument('--repo-url', help='GitHub 보고서의 절대 링크용 레포 URL')
     report.add_argument('--ref', help='GitHub 보고서 링크의 브랜치/커밋 (기본: main)')
     report.set_defaults(func=cmd_report)
     for command in (start, new, note, done, index, prepare, report):
         command.add_argument('--date', default=today(), help='YYYY-MM-DD (기본: 한국 날짜)')
+    help_cmd = sub.add_parser('help', help='명령어 도움말 보기')
+    help_cmd.add_argument('command', nargs='?', choices=tuple(commands), help='도움말을 볼 명령어')
+    help_cmd.set_defaults(func=cmd_help, root_parser=p, commands=commands)
     return p
 
 

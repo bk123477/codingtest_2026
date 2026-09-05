@@ -390,6 +390,13 @@ class StudyTest(unittest.TestCase):
                 self.assertIn('새 항목입니다.', (second / 'README.md').read_text(encoding='utf-8'))
         self.cli('check')
 
+    def test_help_command_shows_general_and_specific_help(self):
+        general = self.cli('help')
+        self.assertIn('{init,start,new,note,done,goal,index,prepare,check,report,help}', general)
+        note = self.cli('help', 'note')
+        self.assertIn('--reference', note)
+        self.assertIn('--source', note)
+
 
 if __name__ == '__main__':
     unittest.main()
