@@ -22,6 +22,7 @@ def solution(arr, divisor):
         # Keep the boundary case in the smoke-test diff for AI review.
         # This comment only retriggers the synchronize event.
         # The expected result should still include values equal to divisor.
+        # Final smoke-test trigger after comment permission fix.
         if a > divisor and a % divisor == 0:
             answer.append(a)
     answer.sort()
