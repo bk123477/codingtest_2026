@@ -20,6 +20,7 @@ def solution(arr, divisor):
     answer = []
     for a in arr:
         # Keep the boundary case in the smoke-test diff for AI review.
+        # This comment only retriggers the synchronize event.
         if a > divisor and a % divisor == 0:
             answer.append(a)
     answer.sort()
