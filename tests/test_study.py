@@ -223,6 +223,28 @@ class StudyTest(unittest.TestCase):
             self.cli('start', '--goal', '0', '--date', DAY)
         self.assertEqual(self.run_git('branch', '--show-current'), 'main')
 
+    def test_status_shows_next_step_for_each_daily_stage(self):
+        before_start = self.cli('status', '--date', DAY)
+        self.assertIn('기록: 아직 없습니다.', before_start)
+        self.assertIn('python3 study.py start --date ' + DAY, before_start)
+        self.cli('start', '--goal', '2', '--date', DAY)
+        started = self.cli('status', '--date', DAY)
+        self.assertIn('완료 0 / 2', started)
+        self.assertIn('python3 study.py new 문제URL', started)
+        folder = self.create()
+        drafting = self.cli('status', '--date', DAY)
+        self.assertIn('작성 중 1건', drafting)
+        self.assertIn('python3 study.py done ' + URL, drafting)
+        notes = folder / 'README.md'
+        notes.write_text(notes.read_text(encoding='utf-8').replace('TODO: 무엇을 구하는 문제인가요?', '배열의 합을 구합니다.')
+                         .replace('TODO: 어떻게 풀었나요?', '배열을 순회하며 더합니다.')
+                         .replace('TODO: 직접 확인한 입력과 예상 결과를 하나 이상 적어주세요.', '[1, 2] → 3, [] → 0'), encoding='utf-8')
+        (folder / 'solution.py').write_text('def solution(values):\n    return sum(values)\n', encoding='utf-8')
+        self.cli('done', URL, '--date', DAY)
+        completed = self.cli('status', '--date', DAY)
+        self.assertIn('완료 1건 · 작성 중 0건', completed)
+        self.assertIn('python3 study.py prepare --date ' + DAY, completed)
+
     def test_daily_branch_rejects_unrelated_files_and_other_date(self):
         self.cli('start', '--date', DAY)
         self.solve()
@@ -438,7 +460,7 @@ class StudyTest(unittest.TestCase):
 
     def test_help_command_shows_general_and_specific_help(self):
         general = self.cli('help')
-        self.assertIn('{init,start,new,note,done,goal,index,prepare,check,report,help}', general)
+        self.assertIn('{init,start,new,note,done,goal,index,status,prepare,check,report,help}', general)
         note = self.cli('help', 'note')
         self.assertIn('--reference', note)
         self.assertIn('--source', note)

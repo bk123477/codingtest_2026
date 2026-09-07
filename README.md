@@ -74,6 +74,14 @@ python3 study.py start --goal none
 
 이 명령은 GitHub의 최신 `origin/main`을 가져온 뒤 `study/내GitHub아이디/오늘날짜` 브랜치를 만듭니다. `--goal`은 **그 날짜에만** 적용됩니다. 생략하면 `init`에서 정한 기본 목표(나중에 `goal`로 바꾼 경우 그 목표)를 사용합니다. 예를 들어 오늘 문제 3개만 풀면 `start --goal 3`, 문제 1개와 학습 정리 1개를 할 계획이면 `start --goal 2`를 실행하세요. 문제와 정리 모두 완료 기록 1개씩으로 합산됩니다. 새 날짜 기록을 시작하기 전에 `git switch main`이나 `git pull`을 따로 실행할 필요는 없습니다. 다만 내 컴퓨터의 `main` 브랜치 자체는 자동으로 갱신되지 않습니다. “미커밋 변경이 있습니다”라는 메시지가 나오면, 전날 작업을 먼저 commit하거나 정리한 뒤 다시 실행하세요.
 
+### 진행 상태를 잊었을 때
+
+```bash
+python3 study.py status
+```
+
+현재 브랜치, 오늘 목표, 완료·작성 중인 기록, 작업 트리 변경 여부와 다음에 실행할 명령을 보여줍니다. 전날 기록을 확인하려면 `python3 study.py status --date YYYY-MM-DD`를 사용하세요.
+
 ### 2-A. 코딩 문제를 푸는 경우
 
 ```bash
@@ -233,6 +241,9 @@ python3 study.py help
 python3 study.py note --help
 # 또는
 python3 study.py help note
+
+# 오늘 어디까지 진행했는지 확인
+python3 study.py status
 ```
 
 ## 무엇이 자동이고, 무엇을 직접 하나요?

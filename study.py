@@ -472,6 +472,53 @@ def cmd_index(args):
     print('일일 목록 갱신 완료.')
 
 
+def cmd_status(args):
+    """Show the selected day's progress without requiring completed records."""
+    config = local()
+    user, day = config['user'], valid_date(args.date)
+    members = profiles()
+    profile = members.get(user)
+    goal = goal_at(profile, day) if profile and day >= profile['joined'] else valid_goal(config['daily_goal'])
+    rows = [(path, data) for path, data in records() if data['user'] == user and data['date'] == day]
+    done = sum(is_complete(data) for _, data in rows)
+    drafts = [(path, data) for path, data in rows if not is_complete(data)]
+    expected_branch = f'study/{user}/{day}'
+    current_branch = git('branch', '--show-current')
+    dirty = git('status', '--porcelain').splitlines()
+    goal_text = f'완료 {done}건 · 자율 기록' if goal is None else f'완료 {done} / {goal}'
+    lines = [f'[{day}] {user} 진행 상태', '', f'- 현재 브랜치: {current_branch}',
+             f'- 작업 브랜치: {expected_branch}',
+             f'- 작업 트리: {"깨끗함" if not dirty else f"변경 {len(dirty)}개"}',
+             f'- 목표: {goal_text}']
+    if not rows:
+        lines.append('- 기록: 아직 없습니다.')
+    else:
+        lines.append(f'- 기록: 완료 {done}건 · 작성 중 {len(drafts)}건')
+        for folder, data in rows:
+            state = '완료' if is_complete(data) else '작성 중'
+            lines.append(f'  - {state}: {type_label(data)} · {data["title"]} ({folder.name})')
+    if current_branch != expected_branch:
+        if dirty:
+            next_step = '현재 브랜치의 미커밋 변경을 먼저 commit하거나 정리한 뒤 작업 브랜치로 전환하세요.'
+        elif git('branch', '--list', expected_branch):
+            next_step = f'git switch {expected_branch}'
+        elif git('branch', '--remotes', '--list', f'{settings()["remote"]}/{expected_branch}'):
+            next_step = f'git switch --track -c {expected_branch} {settings()["remote"]}/{expected_branch}'
+        else:
+            next_step = f'python3 study.py start --date {day}'
+        lines += ['', f'다음: {next_step}']
+    elif not rows:
+        lines += ['', f'다음: python3 study.py new 문제URL --title "문제 제목" --date {day}',
+                  f'또는 python3 study.py note --title "학습 주제" --date {day}']
+    elif drafts:
+        folder, data = drafts[0]
+        target = folder.name if record_type(data) == 'note' else data['url']
+        lines += ['', f'다음: README와 코드를 작성한 뒤 python3 study.py done {target} --date {day}']
+    else:
+        lines += ['', f'다음: python3 study.py prepare --date {day}']
+    print('\n'.join(lines))
+
+
 def reviewer_for(user, day, members):
     names = sorted(name for name, profile in members.items() if profile['joined'] <= day)
     if user not in names or len(names) < 2:
@@ -647,6 +694,9 @@ def parser():
     commands['index'] = index
     index.add_argument('--user')
     index.set_defaults(func=cmd_index)
+    status = sub.add_parser('status', help='현재 날짜의 진행 상태와 다음 단계 보기')
+    commands['status'] = status
+    status.set_defaults(func=cmd_status)
     prepare = sub.add_parser('prepare', help='일일 PR 본문과 Git 명령 생성')
     commands['prepare'] = prepare
     prepare.set_defaults(func=cmd_prepare)
@@ -661,7 +711,7 @@ def parser():
     report.add_argument('--repo-url', help='GitHub 보고서의 절대 링크용 레포 URL')
     report.add_argument('--ref', help='GitHub 보고서 링크의 브랜치/커밋 (기본: main)')
     report.set_defaults(func=cmd_report)
-    for command in (start, new, note, done, index, prepare, report):
+    for command in (start, new, note, done, index, status, prepare, report):
         command.add_argument('--date', default=today(), help='YYYY-MM-DD (기본: 한국 날짜)')
     help_cmd = sub.add_parser('help', help='명령어 도움말 보기')
     help_cmd.add_argument('command', nargs='?', choices=tuple(commands), help='도움말을 볼 명령어')
