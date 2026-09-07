@@ -242,6 +242,12 @@ class StudyTest(unittest.TestCase):
         with self.assertRaises(subprocess.CalledProcessError):
             self.cli('start', '--date', DAY)
 
+    def test_start_removes_local_branches_already_merged_into_main(self):
+        self.run_git('branch', 'already-merged')
+        output = self.cli('start', '--date', DAY)
+        self.assertIn('already-merged', output)
+        self.assertNotIn('already-merged', self.run_git('branch', '--format=%(refname:short)').splitlines())
+
     def test_start_goal_applies_only_to_that_day(self):
         self.cli('start', '--goal', '3', '--date', DAY)
         profile = study.profiles()['alice']
@@ -579,7 +585,7 @@ class StudyTest(unittest.TestCase):
 
     def test_help_command_shows_general_and_specific_help(self):
         general = self.cli('help')
-        self.assertIn('{init,start,new,note,done,goal,index,status,prepare,check,report,help}', general)
+        self.assertIn('{init,cleanup-merged-branches,start,new,note,done,goal,index,status,prepare,check,report,help}', general)
         note = self.cli('help', 'note')
         self.assertIn('--reference', note)
         self.assertIn('--source', note)

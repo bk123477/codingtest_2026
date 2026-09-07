@@ -46,7 +46,11 @@ git switch study/내아이디/전날날짜
 python3 study.py start
 ```
 
-`start`는 최신 `origin/main`을 fetch한 뒤 시작하므로 전날 PR의 변경이 오늘 PR에 섞이지 않습니다. 새 날짜 브랜치를 만들기 위해 로컬 main을 따로 pull할 필요는 없습니다. 다만 로컬 main을 열어 보거나 수동으로 브랜치를 만들 때는 아래처럼 최신화합니다.
+`start`는 시작 전에 최신 `origin/main`을 fetch/pull하고, `main`에 이미 병합된
+로컬 브랜치를 안전하게 정리한 뒤 새 브랜치를 만듭니다. 따라서 전날 PR의 변경이
+오늘 PR에 섞이지 않고, 로컬 main을 따로 pull할 필요도 없습니다. 미커밋 변경사항이
+있으면 정리와 브랜치 생성을 중단합니다. 다만 로컬 main을 열어 보거나 수동으로
+브랜치를 만들 때는 아래처럼 최신화합니다.
 
 ```bash
 git switch main
@@ -61,7 +65,10 @@ git pull origin main
 git branch -d study/내아이디/완료날짜
 ```
 
-Squash merge를 쓰면 `git branch -d`가 거부할 수 있습니다. GitHub에서 해당 PR이 **Merged**인지 먼저 확인한 뒤에만 `git branch -D study/내아이디/완료날짜`로 로컬 브랜치를 정리하세요.
+Squash merge를 쓰면 `git branch -d`가 거부할 수 있습니다. 자동 정리는 이런 브랜치를
+강제로 지우지 않습니다. GitHub에서 해당 PR이 **Merged**인지 먼저 확인한 뒤 수동으로
+정리하세요. 자세한 일괄 정리 명령은 README의 `scripts/cleanup-merged-branches.sh`를
+참고하세요.
 
 첫 기록 PR이 아직 merge되기 전에 다음 날 기록까지 작성하면 `members/내아이디.json`이 두 브랜치에 생길 수 있습니다. 가능하면 첫 PR을 먼저 merge하세요. 충돌이 나면 최신 main을 합친 뒤 해당 JSON의 가장 이른 `joined` 날짜와 목표 이력을 보존합니다.
 
