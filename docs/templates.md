@@ -52,7 +52,7 @@ python3 study.py new https://school.programmers.co.kr/learn/courses/30/lessons/4
 
 날짜가 2026-09-05라면 `records/2026/09/05/alice/programmers-42747/`이 생깁니다.
 그 안의 README에는 실제 제목, URL, 날짜, 작성자, 코드 링크가 이미 들어 있습니다.
-`TODO:`가 붙은 세 부분과 `solution.py`의 코드를 채운 뒤 정답을 확인합니다.
+`TODO:`가 붙은 세 부분과 `solution.py`의 코드를 채운 뒤 정답을 확인합니다. 난이도·풀이 방식·자료구조·알고리즘은 `new` 또는 `done` 옵션으로 README와 `meta.json`에 함께 기록할 수 있습니다.
 
 ```bash
 python3 study.py done programmers-42747 --minutes 20
@@ -60,6 +60,8 @@ python3 study.py prepare
 ```
 
 작성 중인 기록이 하나뿐이면 `done` 뒤의 대상을 생략할 수 있습니다. 여러 기록이 있으면 생성된 폴더명 또는 문제 번호를 지정하며, 문제 URL 방식도 계속 사용할 수 있습니다.
+
+풀이 방식은 `self`(스스로 해결), `hint`(힌트 참고), `answer`(답안·해설 참고) 중 하나를 사용합니다. 자료구조와 알고리즘은 쉼표로 구분합니다.
 
 완성된 모양은 [H-Index 예시](../examples/h-index/README.md)에서 볼 수 있습니다.
 

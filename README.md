@@ -97,7 +97,7 @@ records/YYYY/MM/DD/내GitHub아이디/programmers-42747/
 └── meta.json      # 자동 집계 정보
 ```
 
-`solution.py`에 코드를 작성하고, `README.md`에서 `TODO:`가 붙은 문제 요약·풀이 방법·확인한 예제 세 항목을 채웁니다. 이미 로컬에서 풀어 둔 코드가 있다면 `--source ./내풀이.py`를 명령 끝에 붙이면 됩니다.
+`solution.py`에 코드를 작성하고, `README.md`에서 `TODO:`가 붙은 문제 요약·풀이 방법·확인한 예제 세 항목을 채웁니다. 난이도·풀이 방식·자료구조·알고리즘은 `new` 또는 `done`의 선택 옵션으로 README와 `meta.json`에 함께 기록할 수 있습니다. 이미 로컬에서 풀어 둔 코드가 있다면 `--source ./내풀이.py`를 명령 끝에 붙이면 됩니다.
 
 정답을 채점 사이트에서 확인한 뒤 직접 완료 처리합니다.
 
@@ -107,6 +107,15 @@ python3 study.py done programmers-42747 --minutes 20
 ```
 
 작성 중인 기록이 하나뿐이면 `python3 study.py done --minutes 20`처럼 대상을 생략할 수 있습니다. 여러 개라면 `programmers-42747` 같은 생성 폴더명이나 `42747` 같은 문제 번호를 지정하세요. 기존 문제 URL도 계속 사용할 수 있습니다.
+
+문제 생성 시 정보를 함께 남길 수도 있습니다.
+
+```bash
+python3 study.py new 문제URL --title "문제 제목" --difficulty "Level 1" \
+  --solve-method self --data-structures "배열, 해시" --algorithms "정렬"
+```
+
+이미 만든 기록은 `done`에 같은 옵션을 붙여 갱신합니다. 풀이 방식은 `self`(스스로 해결), `hint`(힌트 참고), `answer`(답안·해설 참고) 중 하나입니다.
 
 ### 2-B. 코테 대신 공부한 내용을 정리하는 경우
 

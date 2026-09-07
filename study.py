@@ -25,6 +25,11 @@ LANGUAGES = {
     'swift': ('solution.swift', '// TODO: 풀이를 작성하세요.\n'),
     'rust': ('solution.rs', '// TODO: 풀이를 작성하세요.\n'),
 }
+SOLVING_METHODS = {
+    'self': '스스로 해결',
+    'hint': '힌트 참고',
+    'answer': '답안·해설 참고',
+}
 UNSET = object()
 
 
@@ -69,6 +74,18 @@ def command_goal(value):
         return positive(int(value))
     except (TypeError, ValueError):
         raise ValueError('목표는 1 이상의 정수 또는 none입니다.')
+
+
+def csv_values(value):
+    return [item.strip() for item in value.split(',') if item.strip()]
+
+
+def solving_method_label(value):
+    return SOLVING_METHODS.get(value, '미입력')
+
+
+def metadata_text(values):
+    return ', '.join(values) if values else '미입력'
 
 
 def goal_progress(done, goal):
@@ -224,6 +241,13 @@ def validate_record(folder, data, members, completed=False):
         require(data['language'] in LANGUAGES, f'{folder}: 지원하지 않는 언어')
         filename, starter = LANGUAGES[data['language']]
         require(data['solution'] == filename, f'{folder}: 코드 파일명이 다릅니다.')
+        require(isinstance(data.get('level', ''), str), f'{folder}: level은 문자열입니다.')
+        solve_method = data.get('solve_method', '')
+        require(solve_method in ('', *SOLVING_METHODS), f'{folder}: solve_method가 올바르지 않습니다.')
+        for field in ('data_structures', 'algorithms'):
+            values = data.get(field, [])
+            require(isinstance(values, list) and all(isinstance(value, str) and value.strip() for value in values),
+                    f'{folder}: {field}는 비어 있지 않은 문자열 배열입니다.')
         files.append(filename)
         required_sections = ('문제', '풀이', '확인한 예제 / 경계 조건')
         completed_status = 'solved'
@@ -346,8 +370,12 @@ def cmd_new(args):
     profile = member_for_new_record(config, day)
     data = {'type': 'problem', 'user': user, 'date': day, 'platform': platform, 'problem_id': pid, 'url': url,
             'title': args.title.strip(), 'language': language, 'solution': filename, 'status': 'draft',
-            'level': args.level, 'tags': [tag.strip() for tag in args.tags.split(',') if tag.strip()], 'minutes': None}
-    content = Template((ROOT / 'templates/problem.md').read_text(encoding='utf-8')).substitute(**data)
+            'level': args.level, 'solve_method': args.solve_method,
+            'data_structures': csv_values(args.data_structures), 'algorithms': csv_values(args.algorithms),
+            'tags': [tag.strip() for tag in args.tags.split(',') if tag.strip()], 'minutes': None}
+    content = Template((ROOT / 'templates/problem.md').read_text(encoding='utf-8')).substitute(
+        **data, level_text=data['level'] or '미입력', solve_method_text=solving_method_label(data['solve_method']),
+        data_structures_text=metadata_text(data['data_structures']), algorithms_text=metadata_text(data['algorithms']))
     folder.mkdir(parents=True)
     write_json(ROOT / 'members' / f'{user}.json', profile)
     write_json(folder / 'meta.json', data)
@@ -426,14 +454,44 @@ def resolve_done_target(user, day, target):
     raise ValueError('완료 대상은 생략(작성 중 기록 1개), 문제 번호, 기록 폴더명 또는 문제 URL입니다.')
 
 
+def sync_problem_metadata(folder, data):
+    block = '\n'.join([
+        '## 풀이 정보', '',
+        f'- 난이도: {data.get("level") or "미입력"}',
+        f'- 풀이 방식: {solving_method_label(data.get("solve_method", ""))}',
+        f'- 자료구조: {metadata_text(data.get("data_structures", []))}',
+        f'- 알고리즘: {metadata_text(data.get("algorithms", []))}', '',
+    ])
+    path = folder / 'README.md'
+    content = path.read_text(encoding='utf-8')
+    if re.search(r'^## 풀이 정보\s*$', content, flags=re.M):
+        content = re.sub(r'^## 풀이 정보\s*.*?(?=^## |\Z)', block, content, count=1, flags=re.M | re.S)
+    else:
+        require(re.search(r'^## 문제\s*$', content, flags=re.M), f'{folder}: 문제 항목을 찾을 수 없습니다.')
+        content = re.sub(r'^## 문제\s*$', block + '\n## 문제', content, count=1, flags=re.M)
+    path.write_text(content, encoding='utf-8')
+
+
 def cmd_done(args):
     user, day = local()['user'], valid_date(args.date)
     folder, data = resolve_done_target(user, day, args.target)
+    metadata_changed = any(value is not None for value in
+                           (args.level, args.solve_method, args.data_structures, args.algorithms))
+    if args.level is not None:
+        data['level'] = args.level
+    if args.solve_method is not None:
+        data['solve_method'] = args.solve_method
+    if args.data_structures is not None:
+        data['data_structures'] = csv_values(args.data_structures)
+    if args.algorithms is not None:
+        data['algorithms'] = csv_values(args.algorithms)
     data['status'] = 'completed' if record_type(data) == 'note' else 'solved'
     if args.minutes is not None:
         data['minutes'] = args.minutes
     validate_record(folder, data, profiles(), completed=True)
     write_json(folder / 'meta.json', data)
+    if metadata_changed and record_type(data) == 'problem':
+        sync_problem_metadata(folder, data)
     refresh(user, day)
     message = '학습 정리를 완료 처리했습니다.' if record_type(data) == 'note' else '채점 결과는 본인이 확인한 것으로 기록합니다.'
     print(f'{folder.name} 완료 처리. {message}')
@@ -712,7 +770,11 @@ def parser():
     new.add_argument('--title', required=True)
     new.add_argument('--lang', choices=LANGUAGES)
     new.add_argument('--source', help='기존 풀이 파일 복사')
-    new.add_argument('--level', default='')
+    new.add_argument('--level', '--difficulty', dest='level', default='', help='난이도')
+    new.add_argument('--solve-method', '--method', choices=SOLVING_METHODS, default='',
+                     help='풀이 방식: self(스스로), hint(힌트), answer(답안·해설)')
+    new.add_argument('--data-structures', '--structures', default='', help='사용한 자료구조 (쉼표로 구분)')
+    new.add_argument('--algorithms', default='', help='사용한 알고리즘 (쉼표로 구분)')
     new.add_argument('--tags', default='')
     new.set_defaults(func=cmd_new)
     note = sub.add_parser('note', help='학습 정리 템플릿 생성 (코드·문제 URL 불필요)')
@@ -727,6 +789,10 @@ def parser():
     commands['done'] = done
     done.add_argument('target', nargs='?', help='생략, 문제 번호, programmers-12345 같은 폴더명 또는 문제 URL')
     done.add_argument('--minutes', type=int)
+    done.add_argument('--level', '--difficulty', dest='level', help='난이도 덮어쓰기')
+    done.add_argument('--solve-method', '--method', choices=SOLVING_METHODS, help='풀이 방식 덮어쓰기')
+    done.add_argument('--data-structures', '--structures', help='사용한 자료구조 덮어쓰기 (쉼표로 구분)')
+    done.add_argument('--algorithms', help='사용한 알고리즘 덮어쓰기 (쉼표로 구분)')
     done.set_defaults(func=cmd_done)
     goal = sub.add_parser('goal', help='기본 목표 또는 특정 하루의 목표 변경 (none: 자율 기록)')
     commands['goal'] = goal

@@ -51,7 +51,7 @@ class StudyTest(unittest.TestCase):
     def create(self, url=URL, day=DAY, **options):
         args = ['new', url, '--title', '테스트 문제', '--date', day]
         for key, value in options.items():
-            args += ['--' + key, value]
+            args += ['--' + key.replace('_', '-'), value]
         self.cli(*args)
         platform, pid, _ = study.identify(url)
         return study.daily_path(study.local()['user'], day) / f'{platform}-{pid}'
@@ -96,6 +96,36 @@ class StudyTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, '이미 존재'):
             self.create()
         self.assertEqual((folder / 'solution.py').read_text(), 'print(42)\n')
+
+    def test_problem_metadata_is_recorded_on_new_and_done(self):
+        self.cli('start', '--date', DAY)
+        first = self.create(level='Level 1', solve_method='self', data_structures='배열, 해시', algorithms='정렬')
+        first_data = study.read_json(first / 'meta.json')
+        self.assertEqual(first_data['level'], 'Level 1')
+        self.assertEqual(first_data['solve_method'], 'self')
+        self.assertEqual(first_data['data_structures'], ['배열', '해시'])
+        self.assertEqual(first_data['algorithms'], ['정렬'])
+        first_readme = (first / 'README.md').read_text(encoding='utf-8')
+        self.assertIn('- 난이도: Level 1', first_readme)
+        self.assertIn('- 풀이 방식: 스스로 해결', first_readme)
+        self.assertIn('- 자료구조: 배열, 해시', first_readme)
+        self.assertIn('- 알고리즘: 정렬', first_readme)
+
+        second = self.create('https://www.acmicpc.net/problem/1000')
+        notes = second / 'README.md'
+        notes.write_text(notes.read_text(encoding='utf-8').replace('TODO: 무엇을 구하는 문제인가요?', '두 수를 더합니다.')
+                         .replace('TODO: 어떻게 풀었나요?', '입력을 더합니다.')
+                         .replace('TODO: 직접 확인한 입력과 예상 결과를 하나 이상 적어주세요.', '1 2 → 3'), encoding='utf-8')
+        (second / 'solution.py').write_text('print(sum(map(int, input().split())))\n', encoding='utf-8')
+        self.cli('done', second.name, '--difficulty', 'Silver 5', '--solve-method', 'answer',
+                 '--data-structures', '문자열', '--algorithms', '구현', '--date', DAY)
+        second_data = study.read_json(second / 'meta.json')
+        self.assertEqual(second_data['level'], 'Silver 5')
+        self.assertEqual(second_data['solve_method'], 'answer')
+        self.assertEqual(second_data['data_structures'], ['문자열'])
+        self.assertEqual(second_data['algorithms'], ['구현'])
+        second_readme = (second / 'README.md').read_text(encoding='utf-8')
+        self.assertIn('- 풀이 방식: 답안·해설 참고', second_readme)
 
     def test_supported_platforms_and_bad_urls(self):
         self.assertEqual(study.identify('http://acmicpc.net/problem/1000')[0:2], ('baekjoon', '1000'))
