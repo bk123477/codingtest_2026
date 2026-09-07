@@ -75,6 +75,12 @@ Squash merge를 쓰면 `git branch -d`가 거부할 수 있습니다. GitHub에�
 python3 study.py start --goal 2
 ```
 
+작업 중 목표를 수정할 때는 같은 날짜를 `--date`로 지정합니다.
+
+```bash
+python3 study.py goal 10 --date 2026-09-10
+```
+
 ```bash
 python3 study.py goal 3 --from 2026-09-10
 ```

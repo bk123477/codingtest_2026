@@ -23,6 +23,7 @@ Python 3.10 이상이 필요하며 외부 패키지는 없습니다. Windows에�
 - 문제와 정리는 완료 1개를 각각 1건으로 합산합니다. 혼합 참여를 위한 별도 모드는 없습니다.
 - 첫 `new` 또는 `note`가 `members/사용자명.json`을 만듭니다. `start --goal`을 쓰면 브랜치 생성 시에도 그 파일이 만들어질 수 있습니다.
 - 그날만 목표를 바꾸려는 요청에는 `python3 study.py start --goal 3 --date YYYY-MM-DD` 또는 `start --goal none`을 사용하세요. 목표는 문제와 정리를 합쳐 완료 기록 수로 셉니다. `--goal`을 생략하면 init의 기본 목표가 적용됩니다.
+- 이미 시작한 날짜의 목표를 수정하려는 요청에는 `python3 study.py goal 10 --date YYYY-MM-DD`를 사용하세요. `--date`는 해당 하루에만 적용됩니다.
 - 앞으로의 기본 목표를 바꾸라는 요청에는 `python3 study.py goal 3 --from YYYY-MM-DD` 또는 `goal none --from YYYY-MM-DD`를 사용하세요. `init` 재실행으로 기존 목표 이력을 바꾸려 하지 마세요.
 
 ## 일일 브랜치 선택

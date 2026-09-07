@@ -140,6 +140,18 @@ class StudyTest(unittest.TestCase):
         self.assertIn('| 2026-09-04 | · |', report)
         self.cli('check')
 
+    def test_goal_date_changes_only_selected_day(self):
+        self.cli('start', '--date', DAY)
+        self.solve()
+        self.cli('goal', '10', '--date', DAY)
+        profile = study.profiles()['alice']
+        self.assertEqual(study.goal_at(profile, DAY), 10)
+        self.assertEqual(study.goal_at(profile, '2026-09-06'), 5)
+        self.assertIn('완료 **1 / 10**', (study.daily_path('alice', DAY) / 'README.md').read_text(encoding='utf-8'))
+        self.cli('goal', 'none', '--date', DAY)
+        self.assertIsNone(study.goal_at(study.profiles()['alice'], DAY))
+        self.assertIn('완료 **1건** · 자율 기록', (study.daily_path('alice', DAY) / 'README.md').read_text(encoding='utf-8'))
+
     def test_goal_none_allows_mixed_self_directed_records(self):
         self.cli('init', 'alice', '--goal', 'none')
         self.cli('start', '--date', DAY)

@@ -440,9 +440,26 @@ def cmd_done(args):
 
 
 def cmd_goal(args):
-    user, day = local()['user'], valid_date(args.start)
+    config = local()
+    user = config['user']
     goal = command_goal(args.count)
     members = profiles()
+    if args.day is not None:
+        day = valid_date(args.day)
+        profile = members.get(user)
+        if profile is None:
+            profile = {'user': user, 'joined': day,
+                       'goals': [{'from': day, 'daily_goal': valid_goal(config['daily_goal'])}]}
+        else:
+            require(day >= profile['joined'], '참여 시작일 전입니다. members 파일의 시작일을 먼저 조정하세요.')
+        overrides = [item for item in profile.get('daily_goals', []) if item['date'] != day]
+        profile['daily_goals'] = sorted(overrides + [{'date': day, 'daily_goal': goal}], key=lambda item: item['date'])
+        write_json(ROOT / 'members' / f'{user}.json', profile)
+        if any(d['user'] == user and d['date'] == day for _, d in records()):
+            refresh(user, day)
+        print(f'{day} 하루 목표를 변경했습니다. 변경된 참여자 파일과 일일 README를 함께 커밋하세요.')
+        return
+    day = valid_date(args.start or today())
     require(user in members, '첫 new 또는 note 실행으로 참여자를 등록한 뒤 목표를 변경하세요.')
     profile = members[user]
     require(day >= profile['joined'], '참여 시작일 이후 날짜를 사용하세요.')
@@ -711,10 +728,12 @@ def parser():
     done.add_argument('target', nargs='?', help='생략, 문제 번호, programmers-12345 같은 폴더명 또는 문제 URL')
     done.add_argument('--minutes', type=int)
     done.set_defaults(func=cmd_done)
-    goal = sub.add_parser('goal', help='적용일별 일일 목표 변경 (none: 자율 기록)')
+    goal = sub.add_parser('goal', help='기본 목표 또는 특정 하루의 목표 변경 (none: 자율 기록)')
     commands['goal'] = goal
     goal.add_argument('count', metavar='건수|none', help='1 이상의 목표 건수 또는 none')
-    goal.add_argument('--from', dest='start', default=today())
+    goal_target = goal.add_mutually_exclusive_group()
+    goal_target.add_argument('--from', dest='start', help='이 날짜 이후의 기본 목표 변경')
+    goal_target.add_argument('--date', dest='day', help='이 날짜에만 적용할 목표 변경')
     goal.set_defaults(func=cmd_goal)
     index = sub.add_parser('index', help='일일 목록 재생성')
     commands['index'] = index
