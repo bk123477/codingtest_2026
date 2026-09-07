@@ -183,6 +183,9 @@ bash scripts/cleanup-merged-branches.sh
 
 이 스크립트는 `main`을 최신화하고 원격 추적 정보도 prune한 뒤,
 `git branch --merged main`에 표시되는 브랜치만 `git branch -d`로 삭제합니다.
+또는 `python3 study.py start --date YYYY-MM-DD`를 실행하면 같은 정리 절차가
+새 일일 브랜치를 만들기 전에 자동으로 실행됩니다. 미커밋 변경사항이 있으면
+정리와 브랜치 생성 모두 중단됩니다.
 
 ## 코딩 에이전트로 기록하기
 

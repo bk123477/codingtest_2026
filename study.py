@@ -119,6 +119,34 @@ def git(*args):
     return subprocess.run(['git', *args], cwd=ROOT, check=True, text=True, capture_output=True).stdout.strip()
 
 
+def cleanup_merged_branches(remote, base_branch, protected_branches=()):
+    """Update the base branch and safely remove local branches already merged into it."""
+    require(not git('status', '--porcelain'), '미커밋 변경이 있어 브랜치 정리를 중단합니다. 먼저 커밋하거나 별도로 보관하세요.')
+    if git('branch', '--show-current') != base_branch:
+        git('switch', base_branch)
+    git('fetch', '--prune', remote)
+    git('pull', '--ff-only', remote, base_branch)
+
+    deleted = []
+    branches = git('branch', '--merged', base_branch, '--format=%(refname:short)').splitlines()
+    for branch in branches:
+        branch = branch.strip()
+        if not branch or branch == base_branch or branch in protected_branches:
+            continue
+        try:
+            git('branch', '-d', branch)
+        except subprocess.CalledProcessError:
+            # Keep branches that Git cannot prove are safely merged.
+            continue
+        deleted.append(branch)
+
+    if deleted:
+        print('병합 완료 로컬 브랜치 정리: ' + ', '.join(deleted))
+    else:
+        print('삭제할 병합 완료 로컬 브랜치가 없습니다.')
+    return deleted
+
+
 def daily_path(user, day):
     return ROOT / 'records' / day.replace('-', '/') / user
 
@@ -328,7 +356,7 @@ def cmd_start(args):
         require(day >= profile['joined'], '참여 시작일 전입니다. members 파일의 시작일을 먼저 조정하세요.')
     require(not git('status', '--porcelain'), '미커밋 변경이 있습니다. 먼저 커밋하거나 별도로 보관하세요.')
     branch = f'study/{user}/{day}'
-    git('fetch', config['remote'], config['base_branch'])
+    cleanup_merged_branches(config['remote'], config['base_branch'], {branch})
     git('switch', '--no-track', '-c', branch, f"{config['remote']}/{config['base_branch']}")
     if requested_goal is not UNSET:
         today_goal = requested_goal
@@ -342,6 +370,10 @@ def cmd_start(args):
         today_goal = goal_at(profile, day) if profile else valid_goal(local_config['daily_goal'])
     goal_text = '자율 기록' if today_goal is None else f'{today_goal}건'
     print(f'{branch} 생성 완료. 최신 {config["base_branch"]}에서 시작했습니다. 오늘 목표: {goal_text}')
+
+
+def cmd_cleanup_merged_branches(args):
+    cleanup_merged_branches(args.remote, args.base)
 
 
 def member_for_new_record(config, day):
@@ -785,6 +817,11 @@ def parser():
     init.add_argument('--lang', choices=LANGUAGES)
     init.add_argument('--goal', default=UNSET, metavar='건수|none', help='일일 목표. none이면 자율 기록')
     init.set_defaults(func=cmd_init)
+    cleanup = sub.add_parser('cleanup-merged-branches', help='main에 병합된 로컬 브랜치 안전하게 정리')
+    commands['cleanup-merged-branches'] = cleanup
+    cleanup.add_argument('remote', nargs='?', default='origin')
+    cleanup.add_argument('base', nargs='?', default='main')
+    cleanup.set_defaults(func=cmd_cleanup_merged_branches)
     start = sub.add_parser('start', help='최신 main에서 오늘 개인 브랜치 생성 (선택: 오늘 목표)')
     commands['start'] = start
     start.add_argument('--goal', default=UNSET, metavar='건수|none', help='이 날짜에만 적용할 목표. 생략하면 init/goal의 기본 목표 사용')
