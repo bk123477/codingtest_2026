@@ -1,6 +1,7 @@
 import importlib.util
 from pathlib import Path
 import unittest
+from unittest.mock import patch
 
 
 SCRIPT_PATH = (
@@ -44,6 +45,26 @@ class AiCodeReviewTests(unittest.TestCase):
         value, truncated = MODULE.clip("abcdef", 3)
         self.assertTrue(truncated)
         self.assertTrue(value.startswith("abc"))
+
+    def test_changed_paths_compares_base_tip_to_head_without_merge_base(self):
+        with patch.object(
+            MODULE,
+            "run_git",
+            return_value="M\trecords/2026/09/07/alice/programmers-1/solution.py\n",
+        ) as run_git:
+            paths = MODULE.changed_paths("base-sha", "head-sha")
+
+        self.assertEqual(
+            paths,
+            ["records/2026/09/07/alice/programmers-1/solution.py"],
+        )
+        run_git.assert_called_once_with(
+            "diff",
+            "--name-status",
+            "--find-renames",
+            "base-sha..head-sha",
+            "--",
+        )
 
 
 if __name__ == "__main__":
