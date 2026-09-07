@@ -25,7 +25,8 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.base.ref }}
           fetch-depth: 0
-          persist-credentials: false
+          # Needed for the authenticated fetch below; no PR code is executed.
+          persist-credentials: true
 
       - name: Fetch pull request head
         env:
