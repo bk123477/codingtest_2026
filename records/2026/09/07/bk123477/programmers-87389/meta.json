@@ -1,0 +1,17 @@
+{
+  "type": "problem",
+  "user": "bk123477",
+  "date": "2026-09-07",
+  "platform": "programmers",
+  "problem_id": "87389",
+  "url": "https://school.programmers.co.kr/learn/courses/30/lessons/87389",
+  "title": "나머지가 1이 되는 수 찾기",
+  "language": "python",
+  "solution": "solution.py",
+  "status": "solved",
+  "level": "",
+  "tags": [
+    "none"
+  ],
+  "minutes": null
+}

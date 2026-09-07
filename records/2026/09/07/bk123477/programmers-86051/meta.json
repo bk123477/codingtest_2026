@@ -1,0 +1,17 @@
+{
+  "type": "problem",
+  "user": "bk123477",
+  "date": "2026-09-07",
+  "platform": "programmers",
+  "problem_id": "86051",
+  "url": "https://school.programmers.co.kr/learn/courses/30/lessons/86051",
+  "title": "없는 숫자 더하기",
+  "language": "python",
+  "solution": "solution.py",
+  "status": "solved",
+  "level": "",
+  "tags": [
+    "none"
+  ],
+  "minutes": null
+}

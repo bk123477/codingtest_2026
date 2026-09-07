@@ -1,0 +1,17 @@
+{
+  "type": "problem",
+  "user": "bk123477",
+  "date": "2026-09-07",
+  "platform": "programmers",
+  "problem_id": "12932",
+  "url": "https://school.programmers.co.kr/learn/courses/30/lessons/12932",
+  "title": "자연수 뒤집어 배열로 만들기",
+  "language": "python",
+  "solution": "solution.py",
+  "status": "solved",
+  "level": "",
+  "tags": [
+    "string"
+  ],
+  "minutes": null
+}

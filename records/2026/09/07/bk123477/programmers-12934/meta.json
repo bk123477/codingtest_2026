@@ -1,0 +1,17 @@
+{
+  "type": "problem",
+  "user": "bk123477",
+  "date": "2026-09-07",
+  "platform": "programmers",
+  "problem_id": "12934",
+  "url": "https://school.programmers.co.kr/learn/courses/30/lessons/12934",
+  "title": "정수 제곱근 판별",
+  "language": "python",
+  "solution": "solution.py",
+  "status": "solved",
+  "level": "",
+  "tags": [
+    "none"
+  ],
+  "minutes": null
+}
