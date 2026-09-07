@@ -326,6 +326,44 @@ class StudyTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, '여러 개'):
             self.cli('done', '--date', DAY)
 
+    def test_done_all_completes_only_after_all_drafts_validate(self):
+        self.cli('start', '--date', DAY)
+        first = self.create()
+        second = self.create('https://www.acmicpc.net/problem/1000')
+        for folder, summary, approach, example, code in (
+            (first, '배열의 합을 구합니다.', '배열을 순회하며 더합니다.', '[1, 2] → 3',
+             'def solution(values):\n    return sum(values)\n'),
+            (second, '두 수를 더합니다.', '입력을 더합니다.', '1 2 → 3',
+             'print(sum(map(int, input().split())))\n'),
+        ):
+            notes = folder / 'README.md'
+            notes.write_text(notes.read_text(encoding='utf-8').replace('TODO: 무엇을 구하는 문제인가요?', summary)
+                             .replace('TODO: 어떻게 풀었나요?', approach)
+                             .replace('TODO: 직접 확인한 입력과 예상 결과를 하나 이상 적어주세요.', example), encoding='utf-8')
+            (folder / 'solution.py').write_text(code, encoding='utf-8')
+
+        output = self.cli('done', '--all', '--date', DAY)
+        self.assertIn('2건 완료 처리', output)
+        self.assertTrue(study.is_complete(study.read_json(first / 'meta.json')))
+        self.assertTrue(study.is_complete(study.read_json(second / 'meta.json')))
+
+    def test_done_all_does_not_partially_complete_invalid_drafts(self):
+        self.cli('start', '--date', DAY)
+        first = self.create()
+        second = self.create('https://www.acmicpc.net/problem/1000')
+        notes = first / 'README.md'
+        notes.write_text(notes.read_text(encoding='utf-8').replace('TODO: 무엇을 구하는 문제인가요?', '배열의 합을 구합니다.')
+                         .replace('TODO: 어떻게 풀었나요?', '배열을 순회하며 더합니다.')
+                         .replace('TODO: 직접 확인한 입력과 예상 결과를 하나 이상 적어주세요.', '[1, 2] → 3'), encoding='utf-8')
+        (first / 'solution.py').write_text('def solution(values):\n    return sum(values)\n', encoding='utf-8')
+
+        with self.assertRaisesRegex(ValueError, '항목을 작성'):
+            self.cli('done', '--all', '--date', DAY)
+        self.assertEqual(study.read_json(first / 'meta.json')['status'], 'draft')
+        self.assertEqual(study.read_json(second / 'meta.json')['status'], 'draft')
+        with self.assertRaisesRegex(ValueError, '--minutes'):
+            self.cli('done', '--all', '--minutes', '20', '--date', DAY)
+
     def test_daily_branch_rejects_unrelated_files_and_other_date(self):
         self.cli('start', '--date', DAY)
         self.solve()

@@ -55,6 +55,8 @@ python3 study.py new 문제URL --title "문제 제목" --lang python --source "�
 python3 study.py done programmers-문제번호 --date YYYY-MM-DD
 ```
 
+- 같은 날짜의 모든 draft를 완료 처리할 때는, 사용자가 모든 문제의 정답 확인을 알린 경우에만 `python3 study.py done --all --date YYYY-MM-DD`를 사용하세요. 모든 기록을 먼저 검증하므로 하나라도 실패하면 완료 처리하지 않습니다. `--all`에는 시간·난이도 등 개별 기록 옵션을 함께 지정할 수 없습니다.
+
 ## 학습 정리 기록
 
 ```bash

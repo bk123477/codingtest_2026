@@ -454,6 +454,11 @@ def resolve_done_target(user, day, target):
     raise ValueError('완료 대상은 생략(작성 중 기록 1개), 문제 번호, 기록 폴더명 또는 문제 URL입니다.')
 
 
+def draft_records(user, day):
+    return [(folder, data) for folder, data in records()
+            if data['user'] == user and data['date'] == day and not is_complete(data)]
+
+
 def sync_problem_metadata(folder, data):
     block = '\n'.join([
         '## 풀이 정보', '',
@@ -474,25 +479,43 @@ def sync_problem_metadata(folder, data):
 
 def cmd_done(args):
     user, day = local()['user'], valid_date(args.date)
-    folder, data = resolve_done_target(user, day, args.target)
+    require(not (args.all and args.target is not None), '--all은 완료 대상을 함께 지정할 수 없습니다.')
     metadata_changed = any(value is not None for value in
                            (args.level, args.solve_method, args.data_structures, args.algorithms))
-    if args.level is not None:
-        data['level'] = args.level
-    if args.solve_method is not None:
-        data['solve_method'] = args.solve_method
-    if args.data_structures is not None:
-        data['data_structures'] = csv_values(args.data_structures)
-    if args.algorithms is not None:
-        data['algorithms'] = csv_values(args.algorithms)
-    data['status'] = 'completed' if record_type(data) == 'note' else 'solved'
-    if args.minutes is not None:
-        data['minutes'] = args.minutes
-    validate_record(folder, data, profiles(), completed=True)
-    write_json(folder / 'meta.json', data)
-    if metadata_changed and record_type(data) == 'problem':
-        sync_problem_metadata(folder, data)
+    require(not (args.all and (args.minutes is not None or metadata_changed)),
+            '--all에는 --minutes, 난이도, 풀이 방식, 자료구조, 알고리즘 옵션을 함께 사용할 수 없습니다.')
+    if args.all:
+        targets = draft_records(user, day)
+        require(targets, '작성 중인 기록이 없습니다.')
+    else:
+        targets = [resolve_done_target(user, day, args.target)]
+
+    # Complete every target only after all validation succeeds, so --all never
+    # leaves a mixture of completed and draft records.
+    for folder, data in targets:
+        validate_record(folder, data, profiles(), completed=True)
+
+    for folder, data in targets:
+        if args.level is not None:
+            data['level'] = args.level
+        if args.solve_method is not None:
+            data['solve_method'] = args.solve_method
+        if args.data_structures is not None:
+            data['data_structures'] = csv_values(args.data_structures)
+        if args.algorithms is not None:
+            data['algorithms'] = csv_values(args.algorithms)
+        data['status'] = 'completed' if record_type(data) == 'note' else 'solved'
+        if args.minutes is not None:
+            data['minutes'] = args.minutes
+        write_json(folder / 'meta.json', data)
+        if metadata_changed and record_type(data) == 'problem':
+            sync_problem_metadata(folder, data)
     refresh(user, day)
+    if args.all:
+        print(f'{len(targets)}건 완료 처리. 코딩 문제의 채점 결과는 본인이 확인한 것으로 기록합니다.')
+        return
+
+    folder, data = targets[0]
     message = '학습 정리를 완료 처리했습니다.' if record_type(data) == 'note' else '채점 결과는 본인이 확인한 것으로 기록합니다.'
     print(f'{folder.name} 완료 처리. {message}')
 
@@ -615,6 +638,8 @@ def cmd_status(args):
         folder, data = drafts[0]
         target = folder.name
         lines += ['', f'다음: README와 코드를 작성한 뒤 python3 study.py done {target} --date {day}']
+        if len(drafts) > 1:
+            lines.append(f'모든 기록의 완료를 확인했다면: python3 study.py done --all --date {day}')
     else:
         lines += ['', f'다음: python3 study.py prepare --date {day}']
     print('\n'.join(lines))
@@ -788,6 +813,7 @@ def parser():
     done = sub.add_parser('done', help='필수 설명/코드 확인 후 완료 표시')
     commands['done'] = done
     done.add_argument('target', nargs='?', help='생략, 문제 번호, programmers-12345 같은 폴더명 또는 문제 URL')
+    done.add_argument('--all', action='store_true', help='해당 날짜의 작성 중 기록을 모두 완료 처리')
     done.add_argument('--minutes', type=int)
     done.add_argument('--level', '--difficulty', dest='level', help='난이도 덮어쓰기')
     done.add_argument('--solve-method', '--method', choices=SOLVING_METHODS, help='풀이 방식 덮어쓰기')
