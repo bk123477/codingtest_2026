@@ -45,7 +45,8 @@ flowchart TD
 
 ```bash
 python3 study.py init alice --lang python --goal 5
-python3 study.py start
+# 오늘만 목표 3건으로 시작 (생략하면 init의 기본 목표)
+python3 study.py start --goal 3
 python3 study.py new https://school.programmers.co.kr/learn/courses/30/lessons/42747 --title "H-Index"
 ```
 
@@ -160,7 +161,7 @@ commit·push한 뒤 PR을 생성해야 GitHub에 올라갑니다. PR은 하루�
 완료한 기록의 개수를 세는 규칙입니다. 현황에 유형별 누적도 별도로 표시됩니다.
 학습 정리만 하는 참여자는 문제 채점 확인란 없이 학습 정리용 확인란이 포함된 PR 본문을 받습니다.
 
-문제와 정리를 섞는 경우에도 목표는 합계로 계산합니다. 예를 들어 `init alice --goal 5` 뒤 문제 3개와 정리 2개를 완료하면 5/5입니다. 목표를 두지 않으려면 첫 설정에서 `--goal none`을 사용합니다. 첫 기록 이후에는 `goal none --from YYYY-MM-DD`로 바꿀 수 있으며, 자율 기록은 PR·리뷰 절차는 같고 현황에 완료 건수만 표시됩니다.
+문제와 정리를 섞는 경우에도 목표는 합계로 계산합니다. 예를 들어 `init alice --goal 5` 뒤 문제 3개와 정리 2개를 완료하면 5/5입니다. 그날만 목표를 바꾸려면 브랜치를 만들 때 `start --goal 3`처럼 입력하세요. 문제 1개와 정리 1개를 할 날은 `start --goal 2`입니다. `start --goal none`은 그날만 자율 기록으로 처리하며, 다음 날에는 기본 목표로 돌아갑니다. 앞으로의 기본 목표 자체를 바꾸려면 `goal none --from YYYY-MM-DD`를 사용합니다. 자율 기록도 PR·리뷰 절차는 같고 현황에는 완료 건수만 표시됩니다.
 
 템플릿 변경은 이후 생성하는 기록에 적용됩니다. 기존 README를 덮어쓰지 않습니다.
 공용 템플릿의 필수 항목 제목을 바꾸려면 `study.py`의 해당 유형 검증 규칙도 함께 수정해야 합니다.

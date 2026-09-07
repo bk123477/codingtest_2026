@@ -20,13 +20,14 @@ Python 3.10 이상이 필요하며 외부 패키지는 없습니다. Windows에�
 - 목표 없이 기록: `python3 study.py init 사용자명 --goal none`
 - 목표 생략 시 `study.json`의 기본 목표(현재 5건)가 적용됩니다. 임의로 자율 참여를 선택하지 마세요.
 - 문제와 정리는 완료 1개를 각각 1건으로 합산합니다. 혼합 참여를 위한 별도 모드는 없습니다.
-- 첫 `new` 또는 `note`가 `members/사용자명.json`을 만듭니다. 이후 실제 목표는 이 파일의 날짜별 이력을 따릅니다.
-- 기존 목표를 바꾸라는 요청에는 `python3 study.py goal 3 --from YYYY-MM-DD` 또는 `goal none --from YYYY-MM-DD`를 사용하세요. `init` 재실행으로 기존 목표 이력을 바꾸려 하지 마세요.
+- 첫 `new` 또는 `note`가 `members/사용자명.json`을 만듭니다. `start --goal`을 쓰면 브랜치 생성 시에도 그 파일이 만들어질 수 있습니다.
+- 그날만 목표를 바꾸려는 요청에는 `python3 study.py start --goal 3 --date YYYY-MM-DD` 또는 `start --goal none`을 사용하세요. 목표는 문제와 정리를 합쳐 완료 기록 수로 셉니다. `--goal`을 생략하면 init의 기본 목표가 적용됩니다.
+- 앞으로의 기본 목표를 바꾸라는 요청에는 `python3 study.py goal 3 --from YYYY-MM-DD` 또는 `goal none --from YYYY-MM-DD`를 사용하세요. `init` 재실행으로 기존 목표 이력을 바꾸려 하지 마세요.
 
 ## 일일 브랜치 선택
 
 - 현재 브랜치가 해당 사용자의 해당 날짜 `study/사용자명/YYYY-MM-DD`이면 계속 사용하세요. 매 기록마다 `start`를 실행하지 마세요.
-- 해당 브랜치가 없고 작업 트리가 깨끗하면 `python3 study.py start --date YYYY-MM-DD`를 실행하세요. 최신 원격 기준 브랜치에서 새 브랜치를 만듭니다.
+- 해당 브랜치가 없고 작업 트리가 깨끗하면 `python3 study.py start --date YYYY-MM-DD`를 실행하세요. 사용자가 그날 목표를 제공하면 같은 명령에 `--goal 건수|none`을 붙입니다. 최신 원격 기준 브랜치에서 새 브랜치를 만듭니다.
 - 해당 날짜의 로컬 브랜치가 이미 있으면 상태를 확인하고 그 브랜치를 사용하세요. 원격에만 있으면 해당 브랜치를 fetch하고 로컬에서 이어서 작업하세요.
 - 이미 merge한 날짜의 추가 기록이나 fork 참여처럼 기본 흐름과 다르면 PR·원격 상태와 CONTRIBUTING 안내를 먼저 확인하세요.
 - 다른 브랜치에 미커밋 변경이 있으면 작업을 버리거나 임의로 커밋·stash하지 마세요. 사용자에게 변경 위치와 브랜치 전환에 필요한 조치를 알려주세요.

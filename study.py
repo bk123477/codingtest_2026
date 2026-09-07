@@ -166,11 +166,24 @@ def profiles():
             days.append(valid_date(item['from']))
             valid_goal(item['daily_goal'])
         require(days == sorted(set(days)) and days[0] == data['joined'], f'{path}: 목표 적용일 순서/시작일을 확인하세요.')
+        daily_goals = data.get('daily_goals', [])
+        require(isinstance(daily_goals, list), f'{path}: daily_goals는 배열입니다.')
+        override_days = []
+        for item in daily_goals:
+            require(isinstance(item, dict), f'{path}: daily_goals 항목은 객체입니다.')
+            override_day = valid_date(item.get('date'))
+            require(override_day >= data['joined'], f'{path}: 일일 목표 날짜는 참여 시작일 이후여야 합니다.')
+            override_days.append(override_day)
+            valid_goal(item.get('daily_goal'))
+        require(override_days == sorted(set(override_days)), f'{path}: 일일 목표 날짜 순서/중복을 확인하세요.')
         result[user] = data
     return result
 
 
 def goal_at(profile, day):
+    for item in profile.get('daily_goals', []):
+        if item['date'] == day:
+            return item['daily_goal']
     goals = [item['daily_goal'] for item in profile['goals'] if item['from'] <= day]
     return goals[-1] if goals else None
 
@@ -276,18 +289,35 @@ def cmd_init(args):
     goal = valid_goal(config['default_daily_goal']) if args.goal is UNSET else command_goal(args.goal)
     write_json(ROOT / '.study/config.json', {'user': user, 'language': args.lang or config['default_language'],
                                           'daily_goal': goal})
-    print(f'{user} 로컬 설정 완료. 첫 new 또는 note 실행 시 참여자 파일을 생성합니다. 기존 참여자의 목표 변경은 goal 명령을 사용하세요.')
+    print(f'{user} 로컬 설정 완료. 첫 new 또는 note 실행 시 참여자 파일을 생성합니다. start --goal로 오늘 목표를 정할 수도 있습니다.')
 
 
 def cmd_start(args):
-    user = local()['user']
+    local_config = local()
+    user = local_config['user']
     day = valid_date(args.date)
     config = settings()
+    requested_goal = command_goal(args.goal) if args.goal is not UNSET else UNSET
+    members = profiles()
+    profile = members.get(user)
+    if profile is not None:
+        require(day >= profile['joined'], '참여 시작일 전입니다. members 파일의 시작일을 먼저 조정하세요.')
     require(not git('status', '--porcelain'), '미커밋 변경이 있습니다. 먼저 커밋하거나 별도로 보관하세요.')
     branch = f'study/{user}/{day}'
     git('fetch', config['remote'], config['base_branch'])
     git('switch', '--no-track', '-c', branch, f"{config['remote']}/{config['base_branch']}")
-    print(f'{branch} 생성 완료. 최신 {config["base_branch"]}에서 시작했습니다.')
+    if requested_goal is not UNSET:
+        today_goal = requested_goal
+        if profile is None:
+            profile = {'user': user, 'joined': day,
+                       'goals': [{'from': day, 'daily_goal': valid_goal(local_config['daily_goal'])}]}
+        overrides = [item for item in profile.get('daily_goals', []) if item['date'] != day]
+        profile['daily_goals'] = sorted(overrides + [{'date': day, 'daily_goal': today_goal}], key=lambda item: item['date'])
+        write_json(ROOT / 'members' / f'{user}.json', profile)
+    else:
+        today_goal = goal_at(profile, day) if profile else valid_goal(local_config['daily_goal'])
+    goal_text = '자율 기록' if today_goal is None else f'{today_goal}건'
+    print(f'{branch} 생성 완료. 최신 {config["base_branch"]}에서 시작했습니다. 오늘 목표: {goal_text}')
 
 
 def member_for_new_record(config, day):
@@ -582,8 +612,9 @@ def parser():
     init.add_argument('--lang', choices=LANGUAGES)
     init.add_argument('--goal', default=UNSET, metavar='건수|none', help='일일 목표. none이면 자율 기록')
     init.set_defaults(func=cmd_init)
-    start = sub.add_parser('start', help='최신 main에서 오늘 개인 브랜치 생성')
+    start = sub.add_parser('start', help='최신 main에서 오늘 개인 브랜치 생성 (선택: 오늘 목표)')
     commands['start'] = start
+    start.add_argument('--goal', default=UNSET, metavar='건수|none', help='이 날짜에만 적용할 목표. 생략하면 init/goal의 기본 목표 사용')
     start.set_defaults(func=cmd_start)
     new = sub.add_parser('new', help='문제 URL로 기록 생성')
     commands['new'] = new
