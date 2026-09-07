@@ -9,6 +9,7 @@ on:
 permissions:
   contents: read
   issues: write
+  pull-requests: write
 
 concurrency:
   group: ai-code-review-pr-${{ github.event.pull_request.number }}
