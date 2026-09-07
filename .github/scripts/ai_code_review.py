@@ -200,7 +200,7 @@ def changed_paths(base_sha: str, head_sha: str) -> list[str]:
         "diff",
         "--name-status",
         "--find-renames",
-        f"{base_sha}...{head_sha}",
+        f"{base_sha}..{head_sha}",
         "--",
     )
     paths: list[str] = []
@@ -233,7 +233,7 @@ def collect_diff(base_sha: str, head_sha: str, paths: list[str], limit: int) -> 
             "diff",
             "--no-ext-diff",
             "--unified=60",
-            f"{base_sha}...{head_sha}",
+            f"{base_sha}..{head_sha}",
             "--",
             path,
         )
