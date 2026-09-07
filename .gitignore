@@ -9,3 +9,6 @@ __pycache__/
 *.o
 *.out
 node_modules/
+.env
+.env.*
+!.env.example
