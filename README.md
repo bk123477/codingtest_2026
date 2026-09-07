@@ -8,8 +8,6 @@
 
 [학습 현황](https://github.com/bk123477/codingtest_2026/tree/progress) · [템플릿 상세 설명](docs/templates.md) · [참여 중 문제 해결](CONTRIBUTING.md) · [운영자 안내](docs/setup.md) · [AI 코드리뷰 설정](docs/ai-code-review.md) · [코딩 문제 예시](examples/h-index/) · [학습 정리 예시](examples/learning-note/)
 
-> 현재는 참여자와 실제 기록이 없습니다. 이 구성이 main에 올라간 뒤 GitHub Actions가 성공하면 학습 현황 페이지가 생성됩니다.
-
 ## 이 스터디에서 하는 일
 
 ```mermaid
