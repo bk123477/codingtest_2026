@@ -46,6 +46,11 @@ class AiCodeReviewTests(unittest.TestCase):
         self.assertTrue(truncated)
         self.assertTrue(value.startswith("abc"))
 
+    def test_review_prompt_requires_concise_korean_output(self):
+        self.assertIn("concise Korean", MODULE.SYSTEM_PROMPT)
+        self.assertIn("at most three short bullets", MODULE.SYSTEM_PROMPT)
+        self.assertIn("## 🤖 AI Code Review", MODULE.SYSTEM_PROMPT)
+
     def test_changed_paths_compares_base_tip_to_head_without_merge_base(self):
         with patch.object(
             MODULE,
