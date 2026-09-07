@@ -200,6 +200,29 @@ class StudyTest(unittest.TestCase):
         with self.assertRaises(subprocess.CalledProcessError):
             self.cli('start', '--date', DAY)
 
+    def test_start_goal_applies_only_to_that_day(self):
+        self.cli('start', '--goal', '3', '--date', DAY)
+        profile = study.profiles()['alice']
+        self.assertEqual(profile['goals'], [{'from': DAY, 'daily_goal': 5}])
+        self.assertEqual(profile['daily_goals'], [{'date': DAY, 'daily_goal': 3}])
+        self.assertEqual(study.goal_at(profile, DAY), 3)
+        self.assertEqual(study.goal_at(profile, '2026-09-06'), 5)
+        self.solve()
+        self.assertIn('완료 **1 / 3**', (study.daily_path('alice', DAY) / 'README.md').read_text(encoding='utf-8'))
+        self.cli('prepare', '--date', DAY)
+        self.assertIn('1 / 3', (self.root / '.study/PR.md').read_text(encoding='utf-8'))
+
+    def test_start_goal_none_makes_only_that_day_self_directed(self):
+        self.cli('start', '--goal', 'none', '--date', DAY)
+        profile = study.profiles()['alice']
+        self.assertIsNone(study.goal_at(profile, DAY))
+        self.assertEqual(study.goal_at(profile, '2026-09-06'), 5)
+
+    def test_invalid_start_goal_does_not_create_a_branch(self):
+        with self.assertRaisesRegex(ValueError, '목표는'):
+            self.cli('start', '--goal', '0', '--date', DAY)
+        self.assertEqual(self.run_git('branch', '--show-current'), 'main')
+
     def test_daily_branch_rejects_unrelated_files_and_other_date(self):
         self.cli('start', '--date', DAY)
         self.solve()
