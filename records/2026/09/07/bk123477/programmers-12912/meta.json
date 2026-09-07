@@ -1,0 +1,17 @@
+{
+  "type": "problem",
+  "user": "bk123477",
+  "date": "2026-09-07",
+  "platform": "programmers",
+  "problem_id": "12912",
+  "url": "https://school.programmers.co.kr/learn/courses/30/lessons/12912",
+  "title": "두 정수 사이의 합",
+  "language": "python",
+  "solution": "solution.py",
+  "status": "solved",
+  "level": "",
+  "tags": [
+    "none"
+  ],
+  "minutes": null
+}
