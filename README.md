@@ -102,8 +102,11 @@ records/YYYY/MM/DD/내GitHub아이디/programmers-42747/
 정답을 채점 사이트에서 확인한 뒤 직접 완료 처리합니다.
 
 ```bash
-python3 study.py done https://school.programmers.co.kr/learn/courses/30/lessons/42747 --minutes 20
+# new가 출력한 폴더명으로 완료 처리
+python3 study.py done programmers-42747 --minutes 20
 ```
+
+작성 중인 기록이 하나뿐이면 `python3 study.py done --minutes 20`처럼 대상을 생략할 수 있습니다. 여러 개라면 `programmers-42747` 같은 생성 폴더명이나 `42747` 같은 문제 번호를 지정하세요. 기존 문제 URL도 계속 사용할 수 있습니다.
 
 ### 2-B. 코테 대신 공부한 내용을 정리하는 경우
 
@@ -222,7 +225,7 @@ Git 명령 실행도 맡기고 싶으면 “검증 후 commit, push하고 PR도 
 
 | 기록 | 명령 | 직접 작성할 내용 | 완료 기준 |
 | --- | --- | --- | --- |
-| 코딩 문제 | `new 문제URL --title "제목"` | 문제 요약, 풀이 방법, 확인한 예제, 코드 | `done 문제URL` |
+| 코딩 문제 | `new 문제URL --title "제목"` | 문제 요약, 풀이 방법, 확인한 예제, 코드 | `done` 또는 `done 문제번호` |
 | 학습 정리 | `note --title "주제"` | 학습 주제/목표, 정리 내용, 배운 점 | `done note-01` |
 
 더 자세한 예시와 파일별 역할은 [템플릿 상세 설명](docs/templates.md)에 있습니다. 템플릿 변경은 이후 새로 만드는 기록에만 적용되며, 기존 기록을 덮어쓰지 않습니다.

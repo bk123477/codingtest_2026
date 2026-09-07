@@ -55,9 +55,11 @@ python3 study.py new https://school.programmers.co.kr/learn/courses/30/lessons/4
 `TODO:`가 붙은 세 부분과 `solution.py`의 코드를 채운 뒤 정답을 확인합니다.
 
 ```bash
-python3 study.py done https://school.programmers.co.kr/learn/courses/30/lessons/42747 --minutes 20
+python3 study.py done programmers-42747 --minutes 20
 python3 study.py prepare
 ```
+
+작성 중인 기록이 하나뿐이면 `done` 뒤의 대상을 생략할 수 있습니다. 여러 기록이 있으면 생성된 폴더명 또는 문제 번호를 지정하며, 문제 URL 방식도 계속 사용할 수 있습니다.
 
 완성된 모양은 [H-Index 예시](../examples/h-index/README.md)에서 볼 수 있습니다.
 

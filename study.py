@@ -355,7 +355,7 @@ def cmd_new(args):
     (folder / filename).write_text(code, encoding='utf-8')
     refresh(user, day)
     print(folder.relative_to(ROOT).as_posix())
-    print('코드와 README의 3개 TODO를 작성한 뒤 done 문제URL 을 실행하세요.')
+    print(f'코드와 README의 3개 TODO를 작성한 뒤 python3 study.py done {folder.name} --date {day} 를 실행하세요.')
 
 
 def cmd_note(args):
@@ -395,14 +395,40 @@ def cmd_note(args):
     print(f'README의 TODO를 작성한 뒤 python3 study.py done {folder.name} --date {day} 를 실행하세요.')
 
 
+def done_candidates(rows):
+    return ', '.join(f'{folder.name} ({data["title"]})' for folder, data in rows)
+
+
+def resolve_done_target(user, day, target):
+    """Resolve a URL, record folder, numeric problem ID, or the only draft record."""
+    rows = [(folder, data) for folder, data in records() if data['user'] == user and data['date'] == day]
+    if target is None:
+        drafts = [(folder, data) for folder, data in rows if not is_complete(data)]
+        require(drafts, '작성 중인 기록이 없습니다. 완료한 기록의 시간만 바꾸려면 폴더명·문제 번호·URL을 지정하세요.')
+        require(len(drafts) == 1,
+                f'작성 중 기록이 여러 개입니다: {done_candidates(drafts)}. 폴더명 또는 문제 번호를 지정하세요.')
+        return drafts[0]
+    exact = [(folder, data) for folder, data in rows if folder.name == target]
+    if exact:
+        return exact[0]
+    if target.isdecimal():
+        matches = [(folder, data) for folder, data in rows
+                   if record_type(data) == 'problem' and data['problem_id'] == target]
+        require(matches, f'문제 번호 {target}의 오늘 기록을 찾을 수 없습니다.')
+        require(len(matches) == 1,
+                f'문제 번호 {target}과 일치하는 기록이 여러 개입니다: {done_candidates(matches)}. 폴더명을 지정하세요.')
+        return matches[0]
+    if target.startswith(('http://', 'https://')):
+        platform, pid, _ = identify(target)
+        folder = daily_path(user, day) / f'{platform}-{pid}'
+        require((folder / 'meta.json').is_file(), f'해당 날짜의 기록을 찾을 수 없습니다: {folder.name}')
+        return folder, read_json(folder / 'meta.json')
+    raise ValueError('완료 대상은 생략(작성 중 기록 1개), 문제 번호, 기록 폴더명 또는 문제 URL입니다.')
+
+
 def cmd_done(args):
     user, day = local()['user'], valid_date(args.date)
-    if args.target.startswith('note-'):
-        folder = daily_path(user, day) / ('note-' + valid_note_id(args.target[5:]))
-    else:
-        platform, pid, _ = identify(args.target)
-        folder = daily_path(user, day) / f'{platform}-{pid}'
-    data = read_json(folder / 'meta.json')
+    folder, data = resolve_done_target(user, day, args.target)
     data['status'] = 'completed' if record_type(data) == 'note' else 'solved'
     if args.minutes is not None:
         data['minutes'] = args.minutes
@@ -512,7 +538,7 @@ def cmd_status(args):
                   f'또는 python3 study.py note --title "학습 주제" --date {day}']
     elif drafts:
         folder, data = drafts[0]
-        target = folder.name if record_type(data) == 'note' else data['url']
+        target = folder.name
         lines += ['', f'다음: README와 코드를 작성한 뒤 python3 study.py done {target} --date {day}']
     else:
         lines += ['', f'다음: python3 study.py prepare --date {day}']
@@ -682,7 +708,7 @@ def parser():
     note.set_defaults(func=cmd_note)
     done = sub.add_parser('done', help='필수 설명/코드 확인 후 완료 표시')
     commands['done'] = done
-    done.add_argument('target', help='문제 URL 또는 note-01 같은 학습 정리 폴더명')
+    done.add_argument('target', nargs='?', help='생략, 문제 번호, programmers-12345 같은 폴더명 또는 문제 URL')
     done.add_argument('--minutes', type=int)
     done.set_defaults(func=cmd_done)
     goal = sub.add_parser('goal', help='적용일별 일일 목표 변경 (none: 자율 기록)')

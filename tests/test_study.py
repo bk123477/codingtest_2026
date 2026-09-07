@@ -234,7 +234,7 @@ class StudyTest(unittest.TestCase):
         folder = self.create()
         drafting = self.cli('status', '--date', DAY)
         self.assertIn('작성 중 1건', drafting)
-        self.assertIn('python3 study.py done ' + URL, drafting)
+        self.assertIn('python3 study.py done ' + folder.name, drafting)
         notes = folder / 'README.md'
         notes.write_text(notes.read_text(encoding='utf-8').replace('TODO: 무엇을 구하는 문제인가요?', '배열의 합을 구합니다.')
                          .replace('TODO: 어떻게 풀었나요?', '배열을 순회하며 더합니다.')
@@ -244,6 +244,45 @@ class StudyTest(unittest.TestCase):
         completed = self.cli('status', '--date', DAY)
         self.assertIn('완료 1건 · 작성 중 0건', completed)
         self.assertIn('python3 study.py prepare --date ' + DAY, completed)
+
+    def test_done_accepts_omitted_target_folder_name_and_problem_id(self):
+        self.cli('start', '--date', DAY)
+        first = self.create()
+        for folder, summary, approach, example, code in (
+            (first, '배열의 합을 구합니다.', '배열을 순회하며 더합니다.', '[1, 2] → 3, [] → 0',
+             'def solution(values):\n    return sum(values)\n'),
+        ):
+            notes = folder / 'README.md'
+            notes.write_text(notes.read_text(encoding='utf-8').replace('TODO: 무엇을 구하는 문제인가요?', summary)
+                             .replace('TODO: 어떻게 풀었나요?', approach)
+                             .replace('TODO: 직접 확인한 입력과 예상 결과를 하나 이상 적어주세요.', example), encoding='utf-8')
+            (folder / 'solution.py').write_text(code, encoding='utf-8')
+        self.cli('done', '--date', DAY)
+        self.assertTrue(study.is_complete(study.read_json(first / 'meta.json')))
+
+        second = self.create('https://www.acmicpc.net/problem/1000')
+        notes = second / 'README.md'
+        notes.write_text(notes.read_text(encoding='utf-8').replace('TODO: 무엇을 구하는 문제인가요?', '두 수를 더합니다.')
+                         .replace('TODO: 어떻게 풀었나요?', '입력을 더합니다.')
+                         .replace('TODO: 직접 확인한 입력과 예상 결과를 하나 이상 적어주세요.', '1 2 → 3'), encoding='utf-8')
+        (second / 'solution.py').write_text('print(sum(map(int, input().split())))\n', encoding='utf-8')
+        self.cli('done', second.name, '--date', DAY)
+        self.assertTrue(study.is_complete(study.read_json(second / 'meta.json')))
+
+        third = self.create('https://www.acmicpc.net/problem/1001')
+        notes = third / 'README.md'
+        notes.write_text(notes.read_text(encoding='utf-8').replace('TODO: 무엇을 구하는 문제인가요?', '두 수의 차를 구합니다.')
+                         .replace('TODO: 어떻게 풀었나요?', '입력을 뺍니다.')
+                         .replace('TODO: 직접 확인한 입력과 예상 결과를 하나 이상 적어주세요.', '3 1 → 2'), encoding='utf-8')
+        (third / 'solution.py').write_text('a, b = map(int, input().split())\nprint(a - b)\n', encoding='utf-8')
+        self.cli('done', '1001', '--date', DAY)
+        self.assertTrue(study.is_complete(study.read_json(third / 'meta.json')))
+
+    def test_done_without_target_lists_multiple_drafts(self):
+        self.create()
+        self.create('https://www.acmicpc.net/problem/1000')
+        with self.assertRaisesRegex(ValueError, '여러 개'):
+            self.cli('done', '--date', DAY)
 
     def test_daily_branch_rejects_unrelated_files_and_other_date(self):
         self.cli('start', '--date', DAY)
