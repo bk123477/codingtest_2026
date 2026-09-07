@@ -173,6 +173,17 @@ git branch -d study/내GitHub아이디/완료날짜
 
 `-d`는 merge되지 않았다고 판단한 브랜치를 지우지 않고 멈춥니다. Squash merge를 쓰면 실제 PR은 merge됐어도 Git이 이 메시지를 낼 수 있습니다. GitHub에서 PR이 **Merged**인지 확인한 뒤에만 `git branch -D study/내GitHub아이디/완료날짜`로 로컬 브랜치를 지울 수 있습니다. GitHub의 **Settings → General → Pull Requests → Automatically delete head branches**를 운영자가 켜면 merge 뒤 원격 브랜치를 자동으로 삭제할 수 있습니다.
 
+병합 완료된 로컬 브랜치를 안전하게 한 번에 정리하려면 다음 스크립트를 실행하세요.
+작업 중인 변경사항이 있으면 중단하고, 아직 `main`에 병합되지 않은 브랜치는
+강제로 삭제하지 않습니다.
+
+```bash
+bash scripts/cleanup-merged-branches.sh
+```
+
+이 스크립트는 `main`을 최신화하고 원격 추적 정보도 prune한 뒤,
+`git branch --merged main`에 표시되는 브랜치만 `git branch -d`로 삭제합니다.
+
 ## 코딩 에이전트로 기록하기
 
 파일을 읽고 수정하며 터미널 명령을 실행할 수 있는 코딩 에이전트에 기록 작업을 맡길 수 있습니다. 참여자는 문제 링크와 풀이 코드 또는 학습 메모를 전달하고, 에이전트는 `new`/`note` 실행과 README 정리, 검증을 담당합니다. 따라서 긴 명령을 매번 직접 입력할 필요가 없습니다.
