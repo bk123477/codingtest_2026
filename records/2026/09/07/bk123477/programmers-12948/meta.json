@@ -1,0 +1,20 @@
+{
+  "type": "problem",
+  "user": "bk123477",
+  "date": "2026-09-07",
+  "platform": "programmers",
+  "problem_id": "12948",
+  "url": "https://school.programmers.co.kr/learn/courses/30/lessons/12948",
+  "title": "핸드폰 번호 가리기",
+  "language": "python",
+  "solution": "solution.py",
+  "status": "solved",
+  "level": "",
+  "solve_method": "",
+  "data_structures": [],
+  "algorithms": [],
+  "tags": [
+    "none"
+  ],
+  "minutes": null
+}

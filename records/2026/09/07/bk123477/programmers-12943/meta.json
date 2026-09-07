@@ -1,0 +1,20 @@
+{
+  "type": "problem",
+  "user": "bk123477",
+  "date": "2026-09-07",
+  "platform": "programmers",
+  "problem_id": "12943",
+  "url": "https://school.programmers.co.kr/learn/courses/30/lessons/12943",
+  "title": "콜라츠 추측",
+  "language": "python",
+  "solution": "solution.py",
+  "status": "solved",
+  "level": "",
+  "solve_method": "",
+  "data_structures": [],
+  "algorithms": [],
+  "tags": [
+    "none"
+  ],
+  "minutes": null
+}

@@ -1,0 +1,20 @@
+{
+  "type": "problem",
+  "user": "bk123477",
+  "date": "2026-09-07",
+  "platform": "programmers",
+  "problem_id": "12935",
+  "url": "https://school.programmers.co.kr/learn/courses/30/lessons/12935",
+  "title": "제일 작은 수 제거하기",
+  "language": "python",
+  "solution": "solution.py",
+  "status": "solved",
+  "level": "",
+  "solve_method": "",
+  "data_structures": [],
+  "algorithms": [],
+  "tags": [
+    "none"
+  ],
+  "minutes": null
+}
