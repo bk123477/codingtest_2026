@@ -399,6 +399,7 @@ def github_request(
         "Accept": "application/vnd.github+json",
         "Authorization": f"Bearer {token}",
         "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "codingtest_2026-ai-code-review",
     }
     data = json.dumps(body).encode("utf-8") if body is not None else None
     if data is not None:
@@ -407,7 +408,11 @@ def github_request(
     try:
         with urlopen(request, timeout=30) as response:
             response_body = response.read().decode("utf-8")
-    except (HTTPError, URLError, TimeoutError):
+    except HTTPError as error:
+        raise ReviewSkipped(
+            f"GitHub API request failed with HTTP {error.code}"
+        ) from None
+    except (URLError, TimeoutError):
         raise ReviewSkipped("GitHub API request failed") from None
     try:
         return json.loads(response_body) if response_body else None
