@@ -46,3 +46,16 @@ test('placeholder concepts are omitted and counted as unclassified',()=>{
   assert.equal(filter([record],{classification:'missing'}).length,1);
   assert.equal(isPlaceholder('None'),true);
 });
+test('spelling variants work in queries and old topic/filter URLs',()=>{
+  for (const q of ['깊이우선탐색', 'ＤＦＳ', 'depthfirstsearch', '깊이  우선 탐색']) {
+    assert.deepEqual(filter(records,{q},taxonomy).map(r=>r.id),['a']);
+  }
+  assert.deepEqual(filter(records,{topic:'D F S'},taxonomy).map(r=>r.id),['a']);
+  assert.deepEqual(filter(records,{structure:'hash map'},taxonomy).map(r=>r.id),['a']);
+  assert.deepEqual(filter(records,{algorithm:'깊이우선탐색'},taxonomy).map(r=>r.id),['a']);
+});
+test('raw detail keywords remain searchable even when they have a core mapping',()=>{
+  const detail={...records[0],search:'index 처음 보는 표현 구현'};
+  assert.equal(filter([detail],{q:'index'},taxonomy).length,1);
+  assert.equal(filter([detail],{q:'처음보는표현'},taxonomy).length,1);
+});

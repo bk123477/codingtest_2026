@@ -36,6 +36,19 @@ class WikiTest(unittest.TestCase):
         (folder / 'meta.json').write_text(json.dumps(data, ensure_ascii=False), encoding='utf-8')
         return folder
 
+    def test_legacy_terms_are_core_facets_without_source_changes(self):
+        folder = self.record(data_structures=['리스트'], algorithms=['순회'],
+                             tags=['완전탐색', '완전 탐색', '처음 보는 표현'])
+        before = (folder / 'meta.json').read_bytes()
+        row = read_records(self.root)[0]
+        self.assertEqual(row['data_structures'], ['배열'])
+        self.assertEqual(row['algorithms'], ['구현', '완전 탐색'])
+        self.assertEqual(row['tags'], [])
+        self.assertEqual(row['keywords'], ['처음 보는 표현'])
+        self.assertIn('처음 보는 표현', row['search'])
+        self.assertIn('순회', row['search'])
+        self.assertEqual((folder / 'meta.json').read_bytes(), before)
+
     def test_completed_shared_personal_notes_and_rebuild(self):
         a = self.record(data_structures=['dict', '해시'])
         b = self.record('bob', data_structures=['해시'])

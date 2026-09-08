@@ -1,4 +1,5 @@
 import json
+import unicodedata
 from pathlib import Path
 
 PACKAGE = Path(__file__).resolve().parent
@@ -10,12 +11,54 @@ PLACEHOLDERS = {'none', 'null', 'n/a', '미분류', '미입력', '없음', '-'}
 def is_placeholder(value):
     return isinstance(value,str) and value.strip().casefold() in PLACEHOLDERS
 
+def term_key(value):
+    """Spacing, Unicode presentation and case never define a new category."""
+    return ''.join(unicodedata.normalize('NFKC', value).casefold().split())
+
+
+def alias_map(field):
+    groups = TAXONOMY.values() if field == 'tags' else [TAXONOMY.get(field, {})]
+    aliases = {}
+    for group in groups:
+        for name, names in group.items():
+            for alias in [name, *names]:
+                key = term_key(alias)
+                if key in aliases and aliases[key] != name:
+                    raise ValueError(f'분류 별칭 충돌: {alias}')
+                aliases[key] = name
+    return aliases
+
+
 def normalize(values, field):
-    aliases = {alias.casefold(): name for name, names in TAXONOMY.get(field, {}).items()
-               for alias in [name, *names]}
+    aliases = alias_map(field)
     if not isinstance(values, list) or any(not isinstance(v, str) or not v.strip() for v in values):
         raise ValueError(f'{field}: 비어 있지 않은 문자열 배열이 필요합니다.')
-    return list(dict.fromkeys(aliases.get(v.strip().casefold(), v.strip()) for v in values if not is_placeholder(v)))
+    result = {}
+    for value in values:
+        if is_placeholder(value):
+            continue
+        name = aliases.get(term_key(value), ' '.join(unicodedata.normalize('NFKC', value).split()))
+        result.setdefault(term_key(name), name)
+    return list(result.values())
+
+
+def classify(record):
+    """Only curated core concepts become facets; unknown terms remain searchable.
+
+    No fuzzy matching: an unseen technique cannot safely be assigned a meaning.
+    Legacy metadata is projected without rewriting the author's source files.
+    """
+    values = []
+    for field in ('data_structures', 'algorithms', 'tags'):
+        values.extend(normalize(record.get(field, []), 'tags'))
+    values = normalize(values, 'tags')
+    known = alias_map('tags')
+    return {
+        'data_structures': [v for v in dict.fromkeys(values) if v in TAXONOMY['data_structures']],
+        'algorithms': [v for v in dict.fromkeys(values) if v in TAXONOMY['algorithms']],
+        'tags': [],
+        'keywords': [v for v in dict.fromkeys(values) if term_key(v) not in known],
+    }
 
 
 def safe_file(root, path):

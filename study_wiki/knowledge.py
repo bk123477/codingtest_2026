@@ -5,7 +5,7 @@ import json
 import re
 from pathlib import Path
 
-from .common import normalize, safe_file, is_placeholder
+from .common import normalize, safe_file, is_placeholder, classify
 
 
 def exam_metadata(value):
@@ -32,7 +32,8 @@ def exam_metadata(value):
 def concept_terms(record):
     # Language/difficulty tags are useful filters but not concept relationships.
     generic = {'python','javascript','typescript','java','c','cpp','c++','go','rust','kotlin','swift'}
-    return sorted({t for t in record['data_structures'] + record['algorithms'] + record['tags']
+    core = classify(record)
+    return sorted({t for t in core['data_structures'] + core['algorithms']
                    if not is_placeholder(t) and t.casefold() not in generic and not re.match(r'^(lv\.?|level)\s*\d', t, re.I)})
 
 
@@ -81,7 +82,7 @@ def read_ai_notes(root, human_records, user=None):
         stale = any(s['id'] not in humans or humans[s['id']]['source_hash'] != s['hash'] for s in sources)
         results.append(dict(id=folder.relative_to(root).as_posix(), kind='ai_note', user='AI', contributors=contributors,
                             title=data['title'], date=data['date'], status=data['review_status'], language='',level='',
-                            platform='',problem_id='',url='',solve_method='',data_structures=[],algorithms=[],tags=tags,
+                            platform='',problem_id='',url='',solve_method='',**classify({'tags': tags}),
                             exam={},origin='ai',model=data['model'],stale=stale,sources=sources,
                             files={'README.md':body},summary=data.get('summary','AI 생성 개념 노트'),
                             search=(body+' '+data['title']+' '+' '.join(tags+contributors)).casefold(),

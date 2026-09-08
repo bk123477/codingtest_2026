@@ -1,30 +1,183 @@
 {
   "data_structures": {
-    "배열": ["array", "list", "리스트"],
-    "해시": ["hash", "hashmap", "dict", "딕셔너리", "해시맵"],
-    "집합": ["set"],
-    "스택": ["stack"],
-    "큐": ["queue"],
-    "덱": ["deque"],
-    "힙": ["heap", "우선순위 큐"],
-    "트리": ["tree"],
-    "그래프": ["graph"],
-    "연결 리스트": ["linked list"]
+    "배열": [
+      "array",
+      "list",
+      "리스트",
+      "2차원 배열",
+      "이차원 배열"
+    ],
+    "해시": [
+      "hash",
+      "hashmap",
+      "dict",
+      "딕셔너리",
+      "해시맵",
+      "hash table",
+      "해시 테이블",
+      "dictionary"
+    ],
+    "집합": [
+      "set"
+    ],
+    "스택": [
+      "stack"
+    ],
+    "큐": [
+      "queue"
+    ],
+    "덱": [
+      "deque"
+    ],
+    "힙": [
+      "heap",
+      "우선순위 큐",
+      "priority queue"
+    ],
+    "트리": [
+      "tree"
+    ],
+    "그래프": [
+      "graph"
+    ],
+    "연결 리스트": [
+      "linked list"
+    ],
+    "트라이": [
+      "trie"
+    ],
+    "분리 집합": [
+      "union find",
+      "disjoint set",
+      "유니온 파인드"
+    ]
   },
   "algorithms": {
-    "정렬": ["sort", "sorting"],
-    "이진 탐색": ["binary search", "이분 탐색"],
-    "완전 탐색": ["brute force", "브루트포스"],
-    "깊이 우선 탐색": ["dfs"],
-    "너비 우선 탐색": ["bfs"],
-    "동적 계획법": ["dp", "dynamic programming"],
-    "그리디": ["greedy", "탐욕법"],
-    "투 포인터": ["two pointers", "투포인터"],
-    "슬라이딩 윈도우": ["sliding window"],
-    "누적 합": ["prefix sum", "누적합"],
-    "백트래킹": ["backtracking"],
-    "구현": ["implementation"],
-    "문자열 처리": ["string", "문자열"],
-    "수학": ["math"]
+    "정렬": [
+      "sort",
+      "sorting"
+    ],
+    "이진 탐색": [
+      "binary search",
+      "이분 탐색",
+      "binarysearch",
+      "이분탐색"
+    ],
+    "완전 탐색": [
+      "brute force",
+      "브루트포스",
+      "전수 탐색",
+      "브루트 포스",
+      "조합"
+    ],
+    "깊이 우선 탐색": [
+      "dfs",
+      "depth first search"
+    ],
+    "너비 우선 탐색": [
+      "bfs",
+      "breadth first search"
+    ],
+    "동적 계획법": [
+      "dp",
+      "dynamic programming"
+    ],
+    "그리디": [
+      "greedy",
+      "탐욕법"
+    ],
+    "투 포인터": [
+      "two pointers",
+      "투포인터"
+    ],
+    "슬라이딩 윈도우": [
+      "sliding window"
+    ],
+    "누적 합": [
+      "prefix sum",
+      "누적합"
+    ],
+    "백트래킹": [
+      "backtracking"
+    ],
+    "구현": [
+      "implementation",
+      "순회",
+      "반복",
+      "누적",
+      "역순 처리",
+      "최솟값 탐색",
+      "필터링",
+      "카운팅",
+      "선형 탐색",
+      "반복 시뮬레이션",
+      "시뮬레이션",
+      "simulation",
+      "조건문",
+      "반복문",
+      "형변환",
+      "합계",
+      "역순",
+      "최솟값",
+      "탐색",
+      "index",
+      "인덱스",
+      "lambda",
+      "패턴",
+      "대칭",
+      "zip",
+      "출력"
+    ],
+    "문자열 처리": [
+      "string",
+      "문자열",
+      "문자열 변환",
+      "슬라이싱",
+      "마스킹",
+      "대소문자",
+      "부분문자열",
+      "아스키코드",
+      "암호화"
+    ],
+    "수학": [
+      "math",
+      "나머지 연산",
+      "제곱근 판별",
+      "자릿수",
+      "등차수열",
+      "나머지",
+      "내적",
+      "제곱근",
+      "평균",
+      "산술연산",
+      "최대공약수",
+      "최소공배수",
+      "약수",
+      "진법변환",
+      "gcd",
+      "lcm"
+    ],
+    "최단 경로": [
+      "shortest path",
+      "dijkstra",
+      "다익스트라",
+      "벨만 포드",
+      "플로이드 워셜"
+    ],
+    "최소 신장 트리": [
+      "mst",
+      "minimum spanning tree",
+      "크루스칼",
+      "프림"
+    ],
+    "위상 정렬": [
+      "topological sort"
+    ],
+    "비트 연산": [
+      "bit manipulation",
+      "bitmask",
+      "비트마스크",
+      "비트마스킹"
+    ]
   }
 }
