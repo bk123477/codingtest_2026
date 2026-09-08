@@ -89,7 +89,7 @@ python3 study.py new https://school.programmers.co.kr/learn/courses/30/lessons/4
 아래와 같은 폴더가 만들어집니다.
 
 ```text
-records/YYYY/MM/DD/내GitHub아이디/programmers-42747/
+records/YYYY/MM/DD/내GitHub아이디/<플랫폼>-<문제식별자>/
 ├── README.md      # 문제 요약, 풀이 설명, 확인한 예제
 ├── solution.py    # 실제 풀이 코드
 └── meta.json      # 자동 집계 정보
@@ -107,6 +107,19 @@ python3 study.py done programmers-42747 --minutes 20
 작성 중인 기록이 하나뿐이면 `python3 study.py done --minutes 20`처럼 대상을 생략할 수 있습니다. 여러 개라면 `programmers-42747` 같은 생성 폴더명이나 `42747` 같은 문제 번호를 지정하세요. 기존 문제 URL도 계속 사용할 수 있습니다.
 
 해당 날짜의 작성 중 기록을 모두 완료 처리하려면, 모든 문제의 채점 결과를 확인한 뒤 `python3 study.py done --all`을 사용하세요. 각 기록을 먼저 모두 검사하므로 하나라도 필수 항목이 비어 있으면 완료 처리하지 않습니다. `--all`에는 `--minutes`나 난이도·풀이 방식 같은 개별 기록 옵션을 함께 쓸 수 없습니다.
+
+현재 `new`는 프로그래머스, 백준, LeetCode, CodeTree 문제 URL을 지원합니다.
+CodeTree는 다음과 같은 공식 문제 링크 형식을 사용할 수 있습니다.
+
+```bash
+python3 study.py new \
+  https://www.codetree.ai/ko/frequent-problems/samsung-sw/problems/street-light-installation/description \
+  --title "Street Light Installation"
+```
+
+CodeTree 기록은 `codetree-문제slug` 폴더로 저장되며, 기존 문제 기록과 같은
+README·풀이 코드·meta.json·완료·PR 절차를 사용합니다. 지원되지 않는 URL 형식은
+문제 기록을 만들지 않고 오류를 표시합니다.
 
 문제 생성 시 정보를 함께 남길 수도 있습니다.
 

@@ -35,6 +35,7 @@ class AiCodeReviewTests(unittest.TestCase):
             "records/2026/09/08/alice/programmers-12922/README.md",
             "records/2026/09/08/alice/note-git/README.md",
             "records/2026/09/08/alice/note-git/notes.md",
+            "records/2026/09/08/alice/codetree-street-light/solution.py",
             "members/alice.json",
         ]
 
@@ -43,7 +44,31 @@ class AiCodeReviewTests(unittest.TestCase):
             [
                 "records/2026/09/08/alice/programmers-12922",
                 "records/2026/09/08/alice/note-git",
+                "records/2026/09/08/alice/codetree-street-light",
                 "기타 변경 파일",
+            ],
+        )
+
+    def test_group_descriptions_use_metadata_not_folder_prefix(self):
+        paths = [
+            "records/2026/09/08/alice/codetree-street-light/solution.py",
+            "records/2026/09/08/alice/algorithm-note/README.md",
+        ]
+        with patch.object(
+            MODULE,
+            "run_git",
+            side_effect=[
+                '{"type":"problem","platform":"codetree","solution":"solution.py"}',
+                '{"type":"note"}',
+            ],
+        ):
+            descriptions = MODULE.review_group_descriptions("head", paths)
+
+        self.assertEqual(
+            descriptions,
+            [
+                ("records/2026/09/08/alice/codetree-street-light", "코딩 문제 · codetree"),
+                ("records/2026/09/08/alice/algorithm-note", "학습 정리"),
             ],
         )
 
@@ -84,6 +109,8 @@ class AiCodeReviewTests(unittest.TestCase):
         self.assertIn("## 🤖 AI Code Review", MODULE.SYSTEM_PROMPT)
         self.assertIn("For every changed record group", MODULE.SYSTEM_PROMPT)
         self.assertIn("#### 🚨 Critical", MODULE.SYSTEM_PROMPT)
+        self.assertIn("factual errors", MODULE.SYSTEM_PROMPT)
+        self.assertIn("inappropriate data", MODULE.SYSTEM_PROMPT)
 
     def test_review_prompt_lists_changed_record_groups(self):
         messages = MODULE.build_messages(

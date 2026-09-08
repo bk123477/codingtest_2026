@@ -12,6 +12,7 @@ import study
 
 SOURCE = Path(study.__file__).parent
 URL = 'https://school.programmers.co.kr/learn/courses/30/lessons/42747'
+CODETREE_URL = 'https://www.codetree.ai/ko/frequent-problems/samsung-sw/problems/street-light-installation/description'
 DAY = '2026-09-05'
 
 
@@ -130,9 +131,22 @@ class StudyTest(unittest.TestCase):
     def test_supported_platforms_and_bad_urls(self):
         self.assertEqual(study.identify('http://acmicpc.net/problem/1000')[0:2], ('baekjoon', '1000'))
         self.assertEqual(study.identify('https://leetcode.com/problems/two-sum/description/?x=1')[1], 'two-sum')
+        self.assertEqual(study.identify(CODETREE_URL)[0:2], ('codetree', 'street-light-installation'))
+        self.assertEqual(
+            study.identify('https://www.codetree.ai/training-field/frequent-problems/problems/santa-gift-factory/description')[0:2],
+            ('codetree', 'santa-gift-factory'),
+        )
         for url in ('file:///tmp/1', 'https://evil.com/problem/1000', 'https://acmicpc.net.evil.com/problem/1', 'https://x:y@acmicpc.net/problem/1'):
             with self.subTest(url=url), self.assertRaises(ValueError):
                 study.identify(url)
+
+    def test_new_creates_codetree_record(self):
+        folder = self.create(CODETREE_URL)
+        data = study.read_json(folder / 'meta.json')
+        self.assertEqual(folder.name, 'codetree-street-light-installation')
+        self.assertEqual(data['platform'], 'codetree')
+        self.assertEqual(data['problem_id'], 'street-light-installation')
+        self.cli('check')
 
     def test_draft_cannot_be_completed_or_submitted(self):
         self.cli('start', '--date', DAY)

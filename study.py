@@ -164,8 +164,22 @@ def identify(url):
     elif host == 'leetcode.com' and (m := re.fullmatch(r'/problems/([a-z0-9-]+)(?:/description)?', path)):
         platform, pid = 'leetcode', m[1]
         path = '/problems/' + pid
+    elif host in ('codetree.ai', 'www.codetree.ai'):
+        # CodeTree currently exposes both localized frequent-problem URLs and
+        # the older training-field URL shape. Keep the category in the URL,
+        # while using the stable problem slug as the record identifier.
+        patterns = (
+            r'/(?:ko|en)/frequent-problems/(?:[^/]+/)?problems/([a-z0-9-]+)(?:/[^/]*)?',
+            r'/training-field/frequent-problems/(?:[^/]+/)?problems/([a-z0-9-]+)(?:/[^/]*)?',
+        )
+        match = next(
+            (match for pattern in patterns if (match := re.fullmatch(pattern, path))),
+            None,
+        )
+        require(match is not None, '지원하는 CodeTree 문제 URL 형식을 확인하세요.')
+        platform, pid, host = 'codetree', match[1], 'www.codetree.ai'
     else:
-        raise ValueError('지원 링크: 프로그래머스, 백준, LeetCode 문제 URL')
+        raise ValueError('지원 링크: 프로그래머스, 백준, LeetCode, CodeTree 문제 URL')
     return platform, pid, urlunsplit(('https', host, path, '', ''))
 
 

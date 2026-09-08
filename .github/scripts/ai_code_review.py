@@ -196,15 +196,13 @@ def is_reviewable_path(path: str) -> bool:
 
 
 def record_directory(path: str) -> str | None:
-    """Return the problem/note directory containing a changed file."""
+    """Return any study-record directory containing a changed file."""
     parts = path.replace("\\", "/").split("/")
-    if len(parts) < 6 or parts[0] != "records":
+    if len(parts) < 7 or parts[0] != "records":
         return None
     if not re.fullmatch(r"\d{4}", parts[1]) or not re.fullmatch(r"\d{2}", parts[2]):
         return None
     if not re.fullmatch(r"\d{2}", parts[3]) or not parts[4]:
-        return None
-    if not (parts[5].startswith("programmers-") or parts[5].startswith("note-")):
         return None
     return "/".join(parts[:6])
 
@@ -218,6 +216,55 @@ def review_groups(paths: list[str]) -> list[str]:
         if group not in groups:
             groups.append(group)
     return groups
+
+
+def record_metadata(head_sha: str, directory: str) -> dict[str, Any]:
+    """Read metadata fields used for classification without executing PR code."""
+    try:
+        raw = run_git("show", f"{head_sha}:{directory}/meta.json")
+        data = json.loads(raw)
+    except (ReviewSkipped, json.JSONDecodeError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def record_kind(metadata: dict[str, Any]) -> str:
+    """Classify both current and older records without relying on folder names."""
+    kind = metadata.get("type")
+    if kind in {"problem", "note"}:
+        return kind
+    if "platform" in metadata or "problem_id" in metadata:
+        return "problem"
+    if "note_id" in metadata:
+        return "note"
+    return "unknown"
+
+
+def safe_record_filename(value: Any) -> str | None:
+    if not isinstance(value, str) or not value or value in {".", ".."}:
+        return None
+    if "/" in value or "\\" in value or Path(value).name != value:
+        return None
+    return value
+
+
+def review_group_descriptions(head_sha: str, paths: list[str]) -> list[tuple[str, str]]:
+    descriptions: list[tuple[str, str]] = []
+    for group in review_groups(paths):
+        if group == "기타 변경 파일":
+            descriptions.append((group, "기록 폴더 밖의 변경"))
+            continue
+        metadata = record_metadata(head_sha, group)
+        kind = record_kind(metadata)
+        if kind == "problem":
+            platform = metadata.get("platform")
+            label = f"코딩 문제{f' · {platform}' if isinstance(platform, str) else ''}"
+        elif kind == "note":
+            label = "학습 정리"
+        else:
+            label = "기록 유형 확인 필요"
+        descriptions.append((group, label))
+    return descriptions
 
 
 def changed_paths(base_sha: str, head_sha: str) -> list[str]:
@@ -305,20 +352,22 @@ def record_directories(paths: list[str]) -> list[str]:
 
 
 def problem_record_directories(paths: list[str]) -> list[str]:
-    """Keep the old helper focused on problem records for compatibility."""
-    return [directory for directory in record_directories(paths)
-            if directory.rsplit("/", 1)[-1].startswith("programmers-")]
+    """Backward-compatible alias for callers that used the old helper name."""
+    return record_directories(paths)
 
 
 def collect_record_context(head_sha: str, paths: list[str]) -> str:
     sections: list[str] = []
     for directory in record_directories(paths):
-        record_name = directory.rsplit("/", 1)[-1]
-        filenames = (
-            ("README.md", "solution.py")
-            if record_name.startswith("programmers-")
-            else ("README.md", "notes.md")
-        )
+        metadata = record_metadata(head_sha, directory)
+        kind = record_kind(metadata)
+        filenames = ["README.md"]
+        if kind == "problem":
+            filenames.append(safe_record_filename(metadata.get("solution")) or "solution.py")
+        elif kind == "note":
+            source_file = safe_record_filename(metadata.get("source_file"))
+            if source_file:
+                filenames.append(source_file)
         for filename in filenames:
             path = f"{directory}/{filename}"
             try:
@@ -349,11 +398,33 @@ Prioritize, in order:
 5. Security and performance risks
 6. Maintainability and unnecessary complexity
 
-For coding-problem records, compare solution.py with the problem statement and
-constraints in the same README.md. For learning-note records, check whether
-the explanation is clear, technically consistent, and supported by the changed
-material. Ignore formatting, naming preferences, and minor style differences
-unless they create a real maintenance or correctness risk.
+Apply the following record-specific review criteria. Do not invent a judge
+result, test execution, score, or source that is not supplied.
+
+For coding-problem records, evaluate whether the solution is likely correct
+under the README's problem statement and constraints:
+- Critical: wrong-answer logic, crashes, violated requirements, missed decisive
+  counterexamples, or an algorithm that is clearly impossible within limits.
+- Important: boundary cases, input/output mistakes, inappropriate data
+  structures or algorithms, likely time/space limit issues, and Python-specific
+  correctness or performance traps.
+- Suggestions: a simpler or more robust approach, clearer complexity reasoning,
+  or a useful test case when the current solution is already likely correct.
+
+For learning-note records, evaluate the learner's understanding of the
+algorithm, data structure, or topic:
+- Critical: factual errors, unsafe guidance, contradictory reasoning, or a
+  conclusion that does not follow from the explanation or examples.
+- Important: missing prerequisites, important edge cases or trade-offs,
+  overgeneralization, unclear algorithm/data-structure reasoning, or examples
+  that do not support the claim.
+- Suggestions: a clearer structure, a small illustrative example, a useful
+  comparison, or a concrete way to verify the concept in practice.
+
+Use the record type and metadata supplied for each group. Do not treat a
+different platform name or record-folder prefix as a different review policy.
+Ignore formatting, naming preferences, and minor writing style unless they
+create a real correctness, learning, or maintenance risk.
 
 Return concise Markdown with these headings when relevant:
 ## 🤖 AI Code Review
@@ -382,9 +453,14 @@ def build_messages(
     repository: str,
     number: int,
     paths: list[str] | None = None,
+    group_descriptions: list[tuple[str, str]] | None = None,
 ) -> list[dict[str, str]]:
-    groups = review_groups(paths or [])
-    group_list = "\n".join(f"- {group}" for group in groups) or "- 기타 변경 파일"
+    descriptions = group_descriptions or [
+        (group, "기록 유형 확인 필요") for group in review_groups(paths or [])
+    ]
+    group_list = "\n".join(
+        f"- {group} ({label})" for group, label in descriptions
+    ) or "- 기타 변경 파일 (기록 폴더 밖의 변경)"
     user_prompt = f"""Review pull request #{number} in {repository}.
 
 <untrusted-pr-material>
@@ -549,12 +625,14 @@ def main() -> int:
             context["base_sha"], context["head_sha"], paths, max_diff_chars
         )
         record_context = collect_record_context(context["head_sha"], paths)
+        group_descriptions = review_group_descriptions(context["head_sha"], paths)
         messages = build_messages(
             diff,
             record_context,
             context["repository"],
             context["number"],
             paths,
+            group_descriptions,
         )
         model = os.environ.get("OPENROUTER_MODEL", DEFAULT_MODEL).strip() or DEFAULT_MODEL
         review = call_openrouter(api_key, model, messages)

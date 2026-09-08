@@ -30,13 +30,18 @@ flowchart TD
 | --- | --- | --- |
 | 생성 명령 | `new 문제URL --title "제목"` | `note --title "주제"` |
 | 적용하는 원본 | [problem.md](../templates/problem.md) | [note.md](../templates/note.md) |
-| 폴더 이름 | `programmers-42747` 등 | `note-01`, `note-02` 등 |
+| 폴더 이름 | `programmers-42747`, `codetree-문제slug` 등 | `note-01`, `note-02` 등 |
 | 자동 입력 | 제목·날짜·아이디·언어·URL·문제 번호 | 제목·날짜·아이디·정리 식별자 |
 | 직접 작성 | 문제 요약·풀이 방법·확인한 예제·코드 | 학습 주제/목표·정리 내용·배운 점/확인한 내용 |
 | 선택 정보 | 난이도·태그·시간·복잡도·회고 | 참고 자료·태그·시간·회고 |
 | 최초 상태 | `draft` | `draft` |
 | done 이후 상태 | `solved` | `completed` |
 | 목표 집계 | 완료한 문제 1개 = 1건 | 완료한 정리 1개 = 1건 |
+
+문제 URL은 프로그래머스, 백준, LeetCode, CodeTree를 지원합니다. CodeTree는
+`https://www.codetree.ai/ko/frequent-problems/.../problems/<slug>/description`
+또는 `https://www.codetree.ai/training-field/frequent-problems/problems/<slug>` 형식을
+사용하며, 생성 폴더는 `codetree-<slug>`가 됩니다.
 
 제목과 태그 등 명령에 입력한 값은 도구가 해당 파일에 옮겨 적습니다.
 `study.py` 자체는 본문을 AI로 작성하거나 웹에서 문제·참고 자료 내용을 다운로드하지 않습니다. 별도로 사용하는 코딩 에이전트는 제공된 코드·메모를 바탕으로 README 작성을 도울 수 있습니다.
