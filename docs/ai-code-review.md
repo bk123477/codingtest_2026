@@ -2,7 +2,7 @@
 
 이 저장소는 PR이 열리거나 새 commit이 올라오거나 다시 열릴 때
 OpenRouter의 `minimax/minimax-m3:free` 모델로 변경사항을 리뷰하고,
-PR의 하나의 댓글을 생성하거나 갱신합니다.
+기록 폴더별로 나눈 하나의 PR 댓글을 생성하거나 갱신합니다.
 
 ## 동작 흐름
 
@@ -10,7 +10,8 @@ PR의 하나의 댓글을 생성하거나 갱신합니다.
 PR opened / synchronize / reopened
   → trusted base branch의 workflow 실행
   → PR head를 Git object로 fetch
-  → 변경된 텍스트 파일과 코딩 문제 README/solution.py 확인
+  → 변경된 텍스트 파일과 문제·학습 정리 context 확인
+  → 문제·노트 기록 폴더별로 리뷰 결과 구성
   → OpenRouter Chat Completions API 호출
   → 기존 AI 리뷰 댓글 갱신 또는 새 댓글 작성
 ```
@@ -68,10 +69,33 @@ records/YYYY/MM/DD/<사용자>/programmers-<문제번호>/
 `meta.json`, lock file, binary file, generated directory는 기본적으로 모델 입력에서
 제외합니다. 큰 diff는 파일별·전체 크기 제한에 따라 잘릴 수 있습니다.
 
+같은 PR에 여러 문제나 학습 정리가 있으면 각 기록 폴더를 별도 그룹으로 리뷰합니다.
+문제 기록은 `README.md`와 `solution.py`, 학습 정리는 `README.md`와 존재하는
+`notes.md`를 함께 참고합니다. 댓글은 다음처럼 기록별 섹션으로 구성됩니다.
+
+```markdown
+## 🤖 AI Code Review
+
+### 📁 records/2026/09/08/alice/programmers-12922
+#### ⚠️ Important
+- ...
+
+### 📁 records/2026/09/08/alice/note-git
+#### 💡 Suggestions
+- ...
+
+### ✅ Summary
+...
+```
+
+각 기록의 `Critical`, `Important`, `Suggestions` 중 내용이 있는 섹션만 표시하며,
+기록별 최대 3개의 짧은 bullet을 사용합니다. 이는 GitHub의 파일 줄에 직접 다는
+인라인 리뷰가 아니라, 하나의 PR 댓글 안에서 기록별로 구분하는 방식입니다.
+
 ## 댓글 처리
 
 댓글 본문에 내부 marker를 넣고, 다음 실행 때 같은 marker를 가진 댓글을 찾아
-갱신합니다. 따라서 새 commit마다 AI 댓글이 무한히 쌓이지 않습니다.
+갱신합니다. 따라서 새 commit마다 기록별 AI 댓글이 무한히 쌓이지 않습니다.
 
 OpenRouter 오류, rate limit, 빈 응답, GitHub 댓글 API 오류는 AI 리뷰 workflow를
 성공 상태로 마무리하면서 Step Summary에 원인만 남깁니다. 기존 학습 검증 workflow의

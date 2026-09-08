@@ -195,6 +195,31 @@ def is_reviewable_path(path: str) -> bool:
     return True
 
 
+def record_directory(path: str) -> str | None:
+    """Return the problem/note directory containing a changed file."""
+    parts = path.replace("\\", "/").split("/")
+    if len(parts) < 6 or parts[0] != "records":
+        return None
+    if not re.fullmatch(r"\d{4}", parts[1]) or not re.fullmatch(r"\d{2}", parts[2]):
+        return None
+    if not re.fullmatch(r"\d{2}", parts[3]) or not parts[4]:
+        return None
+    if not (parts[5].startswith("programmers-") or parts[5].startswith("note-")):
+        return None
+    return "/".join(parts[:6])
+
+
+def review_groups(paths: list[str]) -> list[str]:
+    """Return changed record directories in first-seen order."""
+    groups: list[str] = []
+    other_label = "기타 변경 파일"
+    for path in paths:
+        group = record_directory(path) or other_label
+        if group not in groups:
+            groups.append(group)
+    return groups
+
+
 def changed_paths(base_sha: str, head_sha: str) -> list[str]:
     output = run_git(
         "diff",
@@ -227,8 +252,14 @@ def collect_diff(base_sha: str, head_sha: str, paths: list[str], limit: int) -> 
     sections: list[str] = []
     used = 0
     truncated = False
+    current_group: str | None = None
+    group_order = {group: index for index, group in enumerate(review_groups(paths))}
+    ordered_paths = sorted(
+        paths,
+        key=lambda path: (group_order[record_directory(path) or "기타 변경 파일"], path),
+    )
 
-    for path in paths:
+    for path in ordered_paths:
         patch = run_git(
             "diff",
             "--no-ext-diff",
@@ -240,6 +271,15 @@ def collect_diff(base_sha: str, head_sha: str, paths: list[str], limit: int) -> 
         if not patch.strip():
             continue
         patch, was_truncated = clip(patch, MAX_FILE_DIFF_CHARS)
+        group = record_directory(path) or "기타 변경 파일"
+        if group != current_group:
+            group_header = f"## Review group: {group}\n"
+            if used + len(group_header) > limit:
+                truncated = True
+                break
+            sections.append(group_header)
+            used += len(group_header)
+            current_group = group
         section = f"### {path}\n```diff\n{redact_secrets(patch)}\n```\n"
         if used + len(section) > limit:
             truncated = True
@@ -255,22 +295,31 @@ def collect_diff(base_sha: str, head_sha: str, paths: list[str], limit: int) -> 
     return "\n".join(sections)
 
 
-def problem_record_directories(paths: list[str]) -> list[str]:
+def record_directories(paths: list[str]) -> list[str]:
     directories: list[str] = []
     for path in paths:
-        parts = path.replace("\\", "/").split("/")
-        # records/YYYY/MM/DD/user/programmers-<id>/...
-        if len(parts) >= 7 and parts[0] == "records" and parts[5].startswith("programmers-"):
-            directory = "/".join(parts[:6])
-            if directory not in directories:
-                directories.append(directory)
+        directory = record_directory(path)
+        if directory and directory not in directories:
+            directories.append(directory)
     return directories
+
+
+def problem_record_directories(paths: list[str]) -> list[str]:
+    """Keep the old helper focused on problem records for compatibility."""
+    return [directory for directory in record_directories(paths)
+            if directory.rsplit("/", 1)[-1].startswith("programmers-")]
 
 
 def collect_record_context(head_sha: str, paths: list[str]) -> str:
     sections: list[str] = []
-    for directory in problem_record_directories(paths):
-        for filename in ("README.md", "solution.py"):
+    for directory in record_directories(paths):
+        record_name = directory.rsplit("/", 1)[-1]
+        filenames = (
+            ("README.md", "solution.py")
+            if record_name.startswith("programmers-")
+            else ("README.md", "notes.md")
+        )
+        for filename in filenames:
             path = f"{directory}/{filename}"
             try:
                 content = run_git("show", f"{head_sha}:{path}")
@@ -301,34 +350,52 @@ Prioritize, in order:
 6. Maintainability and unnecessary complexity
 
 For coding-problem records, compare solution.py with the problem statement and
-constraints in the same README.md. Ignore formatting, naming preferences, and
-minor style differences unless they create a real maintenance or correctness
-risk.
+constraints in the same README.md. For learning-note records, check whether
+the explanation is clear, technically consistent, and supported by the changed
+material. Ignore formatting, naming preferences, and minor style differences
+unless they create a real maintenance or correctness risk.
 
 Return concise Markdown with these headings when relevant:
 ## 🤖 AI Code Review
-### 🚨 Critical
-### ⚠️ Important
-### 💡 Suggestions
+For every changed record group, create a separate `### 📁 <record directory>`
+section. Under each record section, use these headings only when relevant:
+#### 🚨 Critical
+#### ⚠️ Important
+#### 💡 Suggestions
 ### ✅ Summary
 
-Omit empty sections. Cite the file path and approximate line when possible.
-Use at most three short bullets per section. Do not restate the full diff or
-problem statement. Keep Summary to one or two sentences. If no high-confidence
-issue is found, say so briefly in Summary. Include a short positive observation
-only when it is concrete and supported by the input.
+Do not merge findings from different record groups. If a group has no
+high-confidence issue, keep its section to one short sentence saying that no
+specific problem was found. If the diff for a group was omitted or truncated,
+say that there is not enough context instead of claiming that it is correct.
+Omit empty severity sections. Cite the file path and approximate line when
+possible. Use at most three short bullets per section.
+Do not restate the full diff or problem statement. Keep Summary to one or two
+sentences. Include a short positive observation only when it is concrete and
+supported by the input.
 """
 
 
-def build_messages(diff: str, context: str, repository: str, number: int) -> list[dict[str, str]]:
+def build_messages(
+    diff: str,
+    context: str,
+    repository: str,
+    number: int,
+    paths: list[str] | None = None,
+) -> list[dict[str, str]]:
+    groups = review_groups(paths or [])
+    group_list = "\n".join(f"- {group}" for group in groups) or "- 기타 변경 파일"
     user_prompt = f"""Review pull request #{number} in {repository}.
 
 <untrusted-pr-material>
+## Changed record groups
+{group_list}
+
 ## Changed-file diff
 {diff or "No reviewable text diff was found."}
 
-## Problem-record context
-{context or "No matching problem-record context was found."}
+## Record context
+{context or "No matching record context was found."}
 </untrusted-pr-material>
 
 Produce only the concise review. Do not reproduce the full diff.
@@ -487,6 +554,7 @@ def main() -> int:
             record_context,
             context["repository"],
             context["number"],
+            paths,
         )
         model = os.environ.get("OPENROUTER_MODEL", DEFAULT_MODEL).strip() or DEFAULT_MODEL
         review = call_openrouter(api_key, model, messages)

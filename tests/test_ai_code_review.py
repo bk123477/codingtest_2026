@@ -29,6 +29,24 @@ class AiCodeReviewTests(unittest.TestCase):
             )
         )
 
+    def test_record_groups_separate_problem_and_learning_note_records(self):
+        paths = [
+            "records/2026/09/08/alice/programmers-12922/solution.py",
+            "records/2026/09/08/alice/programmers-12922/README.md",
+            "records/2026/09/08/alice/note-git/README.md",
+            "records/2026/09/08/alice/note-git/notes.md",
+            "members/alice.json",
+        ]
+
+        self.assertEqual(
+            MODULE.review_groups(paths),
+            [
+                "records/2026/09/08/alice/programmers-12922",
+                "records/2026/09/08/alice/note-git",
+                "기타 변경 파일",
+            ],
+        )
+
     def test_generated_and_binary_files_are_skipped(self):
         self.assertFalse(MODULE.is_reviewable_path("dist/bundle.min.js"))
         self.assertFalse(MODULE.is_reviewable_path("records/x/programmers-1/meta.json"))
@@ -46,10 +64,42 @@ class AiCodeReviewTests(unittest.TestCase):
         self.assertTrue(truncated)
         self.assertTrue(value.startswith("abc"))
 
+    def test_diff_contains_separate_record_group_headers(self):
+        paths = [
+            "records/2026/09/08/alice/programmers-12922/solution.py",
+            "records/2026/09/08/alice/note-git/README.md",
+        ]
+        with patch.object(MODULE, "run_git", side_effect=["problem diff", "note diff"]):
+            diff = MODULE.collect_diff("base", "head", paths, 10_000)
+
+        self.assertIn(
+            "## Review group: records/2026/09/08/alice/programmers-12922",
+            diff,
+        )
+        self.assertIn("## Review group: records/2026/09/08/alice/note-git", diff)
+
     def test_review_prompt_requires_concise_korean_output(self):
         self.assertIn("concise Korean", MODULE.SYSTEM_PROMPT)
         self.assertIn("at most three short bullets", MODULE.SYSTEM_PROMPT)
         self.assertIn("## 🤖 AI Code Review", MODULE.SYSTEM_PROMPT)
+        self.assertIn("For every changed record group", MODULE.SYSTEM_PROMPT)
+        self.assertIn("#### 🚨 Critical", MODULE.SYSTEM_PROMPT)
+
+    def test_review_prompt_lists_changed_record_groups(self):
+        messages = MODULE.build_messages(
+            "diff",
+            "context",
+            "alice/example",
+            12,
+            [
+                "records/2026/09/08/alice/programmers-12922/solution.py",
+                "records/2026/09/08/alice/note-git/README.md",
+            ],
+        )
+
+        user_prompt = messages[1]["content"]
+        self.assertIn("records/2026/09/08/alice/programmers-12922", user_prompt)
+        self.assertIn("records/2026/09/08/alice/note-git", user_prompt)
 
     def test_changed_paths_compares_base_tip_to_head_without_merge_base(self):
         with patch.object(
