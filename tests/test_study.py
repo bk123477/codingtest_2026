@@ -1,3 +1,4 @@
+import json
 import contextlib
 import importlib.util
 import io
@@ -39,6 +40,15 @@ class StudyTest(unittest.TestCase):
         self.run_git('remote', 'add', 'origin', str(self.remote))
         self.run_git('push', '-u', 'origin', 'main')
         self.cli('init', 'alice', '--goal', '5')
+
+    def test_registration_normalizes_core_labels(self):
+        folder = self.create(data_structures='우선순위큐, HEAP', algorithms='완전탐색, brute force',
+                             tags='누적합, prefixsum, 처음 보는 표현')
+        data = json.loads((folder / 'meta.json').read_text())
+        self.assertEqual(data['data_structures'], ['힙'])
+        self.assertEqual(data['algorithms'], ['완전 탐색'])
+        self.assertEqual(data['tags'], ['누적 합', '처음 보는 표현'])
+        self.assertIn('- 자료구조: 힙', (folder / 'README.md').read_text())
 
     def run_git(self, *args):
         return subprocess.run(['git', *args], cwd=self.root, check=True, capture_output=True, text=True).stdout.strip()

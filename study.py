@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """Dependency-free study CLI. Dates use Korea Standard Time (UTC+09:00)."""
+from study_wiki.common import normalize
+
 import argparse
 from collections import Counter
 from datetime import date, datetime, timedelta, timezone
@@ -677,8 +679,8 @@ def cmd_new(args):
     data = {'type': 'problem', 'user': user, 'date': day, 'platform': platform, 'problem_id': pid, 'url': url,
             'title': args.title.strip(), 'language': language, 'solution': filename, 'status': 'draft',
             'level': args.level, 'solve_method': args.solve_method,
-            'data_structures': csv_values(args.data_structures), 'algorithms': csv_values(args.algorithms),
-            'tags': [tag.strip() for tag in args.tags.split(',') if tag.strip()], 'minutes': None}
+            'data_structures': normalize(csv_values(args.data_structures), 'data_structures'), 'algorithms': normalize(csv_values(args.algorithms), 'algorithms'),
+            'tags': normalize(csv_values(args.tags), 'tags'), 'minutes': None}
     content = Template((ROOT / 'templates/problem.md').read_text(encoding='utf-8')).substitute(
         **data, level_text=data['level'] or '미입력', solve_method_text=solving_method_label(data['solve_method']),
         data_structures_text=metadata_text(data['data_structures']), algorithms_text=metadata_text(data['algorithms']))
@@ -710,7 +712,7 @@ def cmd_note(args):
     require(content is None or content.strip(), '가져올 정리 파일이 비어 있습니다.')
     profile = member_for_new_record(config, day)
     data = {'type': 'note', 'note_id': note_id, 'user': user, 'date': day, 'title': args.title.strip(),
-            'status': 'draft', 'tags': [tag.strip() for tag in args.tags.split(',') if tag.strip()],
+            'status': 'draft', 'tags': normalize(csv_values(args.tags), 'tags'),
             'references': references, 'minutes': None}
     if source:
         data['source_file'] = 'notes.md'
@@ -807,9 +809,9 @@ def cmd_done(args):
         if args.solve_method is not None:
             data['solve_method'] = args.solve_method
         if args.data_structures is not None:
-            data['data_structures'] = csv_values(args.data_structures)
+            data['data_structures'] = normalize(csv_values(args.data_structures), 'data_structures')
         if args.algorithms is not None:
-            data['algorithms'] = csv_values(args.algorithms)
+            data['algorithms'] = normalize(csv_values(args.algorithms), 'algorithms')
         data['status'] = 'completed' if record_type(data) == 'note' else 'solved'
         if args.minutes is not None:
             data['minutes'] = args.minutes
@@ -1110,13 +1112,13 @@ def parser():
                      help='풀이 방식: self(스스로), hint(힌트), answer(답안·해설)')
     new.add_argument('--data-structures', '--structures', default='', help='사용한 자료구조 (쉼표로 구분)')
     new.add_argument('--algorithms', default='', help='사용한 알고리즘 (쉼표로 구분)')
-    new.add_argument('--tags', default='')
+    new.add_argument('--tags', default='', help='쉼표 구분. 핵심 분류 별칭은 통합하고, 그 외 표현은 Wiki 검색어로 보존')
     new.set_defaults(func=cmd_new)
     note = sub.add_parser('note', help='학습 정리 템플릿 생성 (코드·문제 URL 불필요)')
     commands['note'] = note
     note.add_argument('--title', required=True)
     note.add_argument('--slug', help='폴더 식별자 (예: git-branch). 생략하면 01부터 자동 번호')
-    note.add_argument('--tags', default='')
+    note.add_argument('--tags', default='', help='쉼표 구분. 핵심 분류 별칭은 통합하고, 그 외 표현은 Wiki 검색어로 보존')
     note.add_argument('--reference', action='append', default=[], help='참고 URL (여러 번 지정 가능)')
     note.add_argument('--source', help='기존 UTF-8 Markdown/텍스트 파일을 notes.md로 복사')
     note.set_defaults(func=cmd_note)

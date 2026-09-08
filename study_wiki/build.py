@@ -8,7 +8,7 @@ import re
 import shutil
 from urllib.parse import quote, urlsplit
 
-from .common import PACKAGE, normalize, safe_file, TAXONOMY
+from .common import PACKAGE, normalize, safe_file, TAXONOMY, classify
 from .render import markdown, safe_url
 from .knowledge import exam_metadata, concept_graph, read_ai_notes
 
@@ -48,8 +48,8 @@ def read_records(root, include_drafts=False, user=None):
         digest = hashlib.sha256(json.dumps([data, contents], sort_keys=True, ensure_ascii=False).encode()).hexdigest()
         item = {key: data.get(key, '') for key in ('title', 'user', 'date', 'status', 'language', 'level', 'platform', 'problem_id', 'url', 'solve_method')}
         item.update(id=relative, kind=kind, files=contents, source_hash=digest, origin='human', exam=exam_metadata(data.get('exam')))
-        for field in ('data_structures', 'algorithms', 'tags'):
-            item[field] = normalize(data.get(field, []), field)
+        item.update(classify(data))
+        item['original_terms'] = [v for field in ('data_structures', 'algorithms', 'tags') for v in data.get(field, [])]
         text = re.sub(r'<!--.*?-->', '', contents['README.md'], flags=re.S)
         sections = re.split(r'^## (.+)\s*$', text, flags=re.M)
         sections = {sections[n].strip(): sections[n+1].strip() for n in range(1, len(sections), 2)}
