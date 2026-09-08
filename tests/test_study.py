@@ -384,14 +384,98 @@ class StudyTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, '--minutes'):
             self.cli('done', '--all', '--minutes', '20', '--date', DAY)
 
-    def test_daily_branch_rejects_unrelated_files_and_other_date(self):
-        self.cli('start', '--date', DAY)
-        self.solve()
-        (self.root / 'unrelated.txt').write_text('unrelated')
+    def test_is_allowed_daily_pr_path_rules(self):
+        user, day = 'alice', '2026-09-08'
+        # PASS: Today's record files, member file, historical meta.json
+        self.assertTrue(study.is_allowed_daily_pr_path('records/2026/09/08/alice/README.md', user, day))
+        self.assertTrue(study.is_allowed_daily_pr_path('records/2026/09/08/alice/programmers-1/README.md', user, day))
+        self.assertTrue(study.is_allowed_daily_pr_path('records/2026/09/08/alice/programmers-1/solution.py', user, day))
+        self.assertTrue(study.is_allowed_daily_pr_path('records/2026/09/08/alice/programmers-1/meta.json', user, day))
+        self.assertTrue(study.is_allowed_daily_pr_path('members/alice.json', user, day))
+        self.assertTrue(study.is_allowed_daily_pr_path('records/2026/09/07/alice/programmers-1/meta.json', user, day))
+        self.assertTrue(study.is_allowed_daily_pr_path('records/2026/09/06/alice/note-01/meta.json', user, day))
+
+        # FAIL: Past date non-meta files
+        self.assertFalse(study.is_allowed_daily_pr_path('records/2026/09/07/alice/programmers-1/README.md', user, day))
+        self.assertFalse(study.is_allowed_daily_pr_path('records/2026/09/07/alice/programmers-1/solution.py', user, day))
+        self.assertFalse(study.is_allowed_daily_pr_path('records/2026/09/07/alice/programmers-1/solution.js', user, day))
+        self.assertFalse(study.is_allowed_daily_pr_path('records/2026/09/07/alice/programmers-1/Solution.java', user, day))
+        self.assertFalse(study.is_allowed_daily_pr_path('records/2026/09/07/alice/note-01/notes.md', user, day))
+        self.assertFalse(study.is_allowed_daily_pr_path('records/2026/09/07/alice/README.md', user, day))
+
+        # FAIL: Other user files (past or present)
+        self.assertFalse(study.is_allowed_daily_pr_path('records/2026/09/07/bob/programmers-1/meta.json', user, day))
+        self.assertFalse(study.is_allowed_daily_pr_path('records/2026/09/08/bob/programmers-1/meta.json', user, day))
+        self.assertFalse(study.is_allowed_daily_pr_path('records/2026/09/08/bob/programmers-1/solution.py', user, day))
+        self.assertFalse(study.is_allowed_daily_pr_path('members/bob.json', user, day))
+
+        # FAIL: Repository tools, workflow, and test files
+        self.assertFalse(study.is_allowed_daily_pr_path('study.py', user, day))
+        self.assertFalse(study.is_allowed_daily_pr_path('.github/workflows/ci.yml', user, day))
+        self.assertFalse(study.is_allowed_daily_pr_path('tests/test_study.py', user, day))
+        self.assertFalse(study.is_allowed_daily_pr_path('unrelated.txt', user, day))
+
+        # FAIL: Traversal, invalid date, wrong path structure
+        self.assertFalse(study.is_allowed_daily_pr_path('records/2026/09/07/alice/../bob/meta.json', user, day))
+        self.assertFalse(study.is_allowed_daily_pr_path('records/2026/02/31/alice/programmers-1/meta.json', user, day))
+        self.assertFalse(study.is_allowed_daily_pr_path('records/2026/09/07/alice/meta.json', user, day))
+        self.assertFalse(study.is_allowed_daily_pr_path('records/2026/09/07/alice/p-1/sub/meta.json', user, day))
+        self.assertFalse(study.is_allowed_daily_pr_path('/records/2026/09/07/alice/p-1/meta.json', user, day))
+
+    def test_daily_branch_allows_historical_meta_and_rejects_unrelated_or_other_files(self):
+        past_day = '2026-09-07'
+        today = '2026-09-08'
+        # Setup past records on main
+        past_folder1 = self.solve('https://school.programmers.co.kr/learn/courses/30/lessons/1001', day=past_day)
+        past_folder2 = self.solve('https://school.programmers.co.kr/learn/courses/30/lessons/1002', day=past_day)
         self.run_git('add', '.')
-        self.run_git('commit', '-m', 'unrelated')
+        self.run_git('commit', '-m', 'past day records')
+        self.run_git('push', 'origin', 'main')
+        base_commit = self.run_git('rev-parse', 'HEAD')
+
+        # Start today's branch and solve a problem
+        self.cli('start', '--date', today)
+        self.solve('https://school.programmers.co.kr/learn/courses/30/lessons/1003', day=today)
+
+        # PASS: Modifying multiple historical meta.json files along with today's record
+        meta1 = study.read_json(past_folder1 / 'meta.json')
+        meta1['tags'] = ['배열']
+        study.write_json(past_folder1 / 'meta.json', meta1)
+
+        meta2 = study.read_json(past_folder2 / 'meta.json')
+        meta2['tags'] = ['정렬']
+        study.write_json(past_folder2 / 'meta.json', meta2)
+
+        self.run_git('add', str(past_folder1 / 'meta.json'), str(past_folder2 / 'meta.json'))
+        self.run_git('commit', '-m', 'enrich historical meta.json')
+
+        # check_all must succeed
+        study.check_all(f'study/alice/{today}', base_commit)
+
+        # FAIL: Past date README.md change is rejected
+        past_readme = past_folder1 / 'README.md'
+        past_readme.write_text(past_readme.read_text(encoding='utf-8') + '\n<!-- extra note -->\n', encoding='utf-8')
+        self.run_git('add', str(past_readme))
+        self.run_git('commit', '-m', 'modify past readme')
         with self.assertRaisesRegex(ValueError, '일일 PR에는'):
-            study.check_all('study/alice/' + DAY, self.base)
+            study.check_all(f'study/alice/{today}', base_commit)
+        self.run_git('reset', '--hard', 'HEAD~1')
+
+        # FAIL: Past date solution.py change is rejected
+        (past_folder1 / 'solution.py').write_text('# modified code', encoding='utf-8')
+        self.run_git('add', str(past_folder1 / 'solution.py'))
+        self.run_git('commit', '-m', 'modify past solution')
+        with self.assertRaisesRegex(ValueError, '일일 PR에는'):
+            study.check_all(f'study/alice/{today}', base_commit)
+        self.run_git('reset', '--hard', 'HEAD~1')
+
+        # FAIL: Tool file change is rejected
+        (self.root / 'study.py').write_text('# modified tool', encoding='utf-8')
+        self.run_git('add', 'study.py')
+        self.run_git('commit', '-m', 'modify tool')
+        with self.assertRaisesRegex(ValueError, '일일 PR에는'):
+            study.check_all(f'study/alice/{today}', base_commit)
+        self.run_git('reset', '--hard', 'HEAD~1')
 
     def test_reviewer_rotation_is_balanced_without_self_review(self):
         members = {name: {'joined': DAY} for name in ('alice', 'bob', 'charlie', 'dana')}

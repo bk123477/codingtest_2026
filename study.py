@@ -5,7 +5,7 @@ from collections import Counter
 from datetime import date, datetime, timedelta, timezone
 import html
 import json
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import re
 import subprocess
 import sys
@@ -149,6 +149,41 @@ def cleanup_merged_branches(remote, base_branch, protected_branches=()):
 
 def daily_path(user, day):
     return ROOT / 'records' / day.replace('-', '/') / user
+
+
+def is_allowed_daily_pr_path(path, user, day):
+    p = PurePosixPath(path)
+    if p.is_absolute() or any(part in ('', '.', '..') for part in p.parts):
+        return False
+    parts = p.parts
+
+    # 1. 본인 참여자 파일: members/<user>.json
+    if parts == ('members', f'{user}.json'):
+        return True
+
+    # 2. 해당 날짜 본인 기록 전체: records/YYYY/MM/DD/<user>/**
+    prefix_parts = daily_path(user, day).relative_to(ROOT).parts
+    if len(parts) > len(prefix_parts) and parts[:len(prefix_parts)] == prefix_parts:
+        return True
+
+    # 3. 본인의 다른 날짜 기록 중 meta.json만: records/YYYY/MM/DD/<user>/<record>/meta.json
+    if len(parts) == 7:
+        if (parts[0] == 'records' and
+            parts[4] == user and
+            parts[6] == 'meta.json'):
+            y, m, d = parts[1], parts[2], parts[3]
+            if not (re.fullmatch(r'\d{4}', y) and re.fullmatch(r'\d{2}', m) and re.fullmatch(r'\d{2}', d)):
+                return False
+            try:
+                valid_date(f'{y}-{m}-{d}')
+            except (ValueError, TypeError):
+                return False
+            record = parts[5]
+            if not re.fullmatch(r'[A-Za-z0-9._-]+', record) or record in ('.', '..'):
+                return False
+            return True
+
+    return False
 
 
 def identify(url):
@@ -622,9 +657,8 @@ def check_all(branch=None, base=None):
         valid_date(day)
         require(base, 'study 브랜치 검사에는 --base 커밋이 필요합니다.')
         changed = git('diff', '--name-only', '--no-renames', f'{base}...HEAD').splitlines()
-        prefix = daily_path(user, day).relative_to(ROOT).as_posix() + '/'
-        require(changed and all(p.startswith(prefix) or p == f'members/{user}.json' for p in changed),
-                '일일 PR에는 해당 날짜/본인 기록과 본인 참여자 파일만 포함하세요. 도구 변경은 별도 브랜치를 사용하세요.')
+        require(changed and all(is_allowed_daily_pr_path(p, user, day) for p in changed),
+                '일일 PR에는 해당 날짜 본인 기록, 본인 참여자 파일, 본인 기존 기록의 meta.json만 포함할 수 있습니다.')
         daily = [(p, d) for p, d in rows if d['user'] == user and d['date'] == day]
         require(daily, '일일 PR에 학습 기록이 없습니다.')
         require(all(is_complete(d) for _, d in daily), '일일 PR에 draft가 남아 있습니다. done 처리하세요.')
