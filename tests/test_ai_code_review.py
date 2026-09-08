@@ -104,13 +104,19 @@ class AiCodeReviewTests(unittest.TestCase):
         self.assertIn("## Review group: records/2026/09/08/alice/note-git", diff)
 
     def test_review_prompt_requires_concise_korean_output(self):
-        self.assertIn("concise Korean", MODULE.SYSTEM_PROMPT)
-        self.assertIn("at most three short bullets", MODULE.SYSTEM_PROMPT)
+        self.assertIn("한국어로 작성", MODULE.SYSTEM_PROMPT)
+        self.assertIn("분석 과정, 사고 과정, 작업 계획을 출력하지 마세요", MODULE.SYSTEM_PROMPT)
+        self.assertIn("Let me analyze", MODULE.SYSTEM_PROMPT)
         self.assertIn("## 🤖 AI Code Review", MODULE.SYSTEM_PROMPT)
-        self.assertIn("For every changed record group", MODULE.SYSTEM_PROMPT)
+        self.assertIn("### 📁 <record directory>", MODULE.SYSTEM_PROMPT)
         self.assertIn("#### 🚨 Critical", MODULE.SYSTEM_PROMPT)
-        self.assertIn("factual errors", MODULE.SYSTEM_PROMPT)
-        self.assertIn("inappropriate data", MODULE.SYSTEM_PROMPT)
+        self.assertIn("### ✅ Summary", MODULE.SYSTEM_PROMPT)
+
+    def test_user_prompt_requires_korean_final_review_without_analysis(self):
+        messages = MODULE.build_messages("diff", "context", "alice/repo", 1)
+        user_prompt = messages[1]["content"]
+        self.assertIn("한국어 최종 리뷰만 출력", user_prompt)
+        self.assertIn("분석 과정 출력 금지", user_prompt)
 
     def test_review_prompt_lists_changed_record_groups(self):
         messages = MODULE.build_messages(
@@ -148,6 +154,146 @@ class AiCodeReviewTests(unittest.TestCase):
             "--",
         )
 
+    def test_validate_review_output_pass_cases(self):
+        # 1. Normal Korean review
+        normal_review = (
+            "## 🤖 AI Code Review\n\n"
+            "### 📁 records/2026/09/08/alice/programmers-1\n"
+            "구체적인 오류를 발견하지 못했습니다.\n\n"
+            "### ✅ Summary\n"
+            "전체적으로 깔끔하게 작성되었습니다."
+        )
+        self.assertTrue(MODULE.validate_review_output(normal_review))
+
+        # 2. Korean review with code identifiers and English terms
+        code_review = (
+            "## 🤖 AI Code Review\n\n"
+            "### 📁 records/2026/09/08/alice/programmers-12903\n"
+            "#### 💡 Suggestions\n"
+            "- `solution.py`의 `s[len(s)//2]` 슬라이싱 로직이 직관적입니다.\n"
+            "- O(1) 시간 복잡도로 잘 해결되었습니다.\n\n"
+            "### ✅ Summary\n"
+            "문자열 인덱싱을 적절히 활용하여 효율적으로 해결했습니다."
+        )
+        self.assertTrue(MODULE.validate_review_output(code_review))
+
+    def test_validate_review_output_fail_cases(self):
+        # Starts with "Let me analyze..."
+        preamble_review = (
+            "Let me analyze the PR material first...\n"
+            "## 🤖 AI Code Review\n\n"
+            "### 📁 records/2026/09/08/alice/p-1\n"
+            "구체적인 오류를 발견하지 못했습니다.\n\n"
+            "### ✅ Summary\n"
+            "요약입니다."
+        )
+        self.assertFalse(MODULE.validate_review_output(preamble_review))
+
+        # Contains other preambles like "Let me think", "Wait,", etc.
+        self.assertFalse(MODULE.validate_review_output(
+            "## 🤖 AI Code Review\n\nWait, let me re-check...\n### ✅ Summary\n요약입니다."
+        ))
+        self.assertFalse(MODULE.validate_review_output(
+            "## 🤖 AI Code Review\n\nI need to inspect the code...\n### ✅ Summary\n요약입니다."
+        ))
+        self.assertFalse(MODULE.validate_review_output(
+            "## 🤖 AI Code Review\n\nFirst, let me inspect the code...\n### ✅ Summary\n요약입니다."
+        ))
+
+        # Mostly English review without sufficient Korean
+        english_review = (
+            "## 🤖 AI Code Review\n\n"
+            "### 📁 records/2026/09/08/alice/programmers-1\n"
+            "#### 💡 Suggestions\n"
+            "- The solution looks great and handles edge cases properly.\n"
+            "- Time complexity is O(N) which is optimal.\n\n"
+            "### ✅ Summary\n"
+            "Good job on this pull request."
+        )
+        self.assertFalse(MODULE.validate_review_output(english_review))
+
+        # Missing Summary section
+        no_summary = (
+            "## 🤖 AI Code Review\n\n"
+            "### 📁 records/2026/09/08/alice/programmers-1\n"
+            "구체적인 오류를 발견하지 못했습니다."
+        )
+        self.assertFalse(MODULE.validate_review_output(no_summary))
+
+        # Empty or too short response
+        self.assertFalse(MODULE.validate_review_output(""))
+        self.assertFalse(MODULE.validate_review_output("   \n  "))
+        self.assertFalse(MODULE.validate_review_output("## 🤖 AI Code Review\n짧음"))
+
+    def test_parse_openrouter_payload_and_truncation_detection(self):
+        import json
+        # Normal completion
+        normal_payload = {
+            "choices": [
+                {
+                    "message": {"content": "정상 응답입니다."},
+                    "finish_reason": "stop",
+                }
+            ]
+        }
+        text, reason = MODULE.parse_openrouter_payload(normal_payload)
+        self.assertEqual(text, "정상 응답입니다.")
+        self.assertEqual(reason, "stop")
+
+        # Truncated completion (finish_reason: length)
+        truncated_payload = {
+            "choices": [
+                {
+                    "message": {"content": "중간에 잘린 응답..."},
+                    "finish_reason": "length",
+                }
+            ]
+        }
+        text, reason = MODULE.parse_openrouter_payload(truncated_payload)
+        self.assertEqual(reason, "length")
+
+        # In call_openrouter, finish_reason == 'length' must raise ReviewSkipped
+        with patch.object(MODULE, "urlopen") as mock_urlopen:
+            mock_resp = mock_urlopen.return_value.__enter__.return_value
+            mock_resp.read.return_value = json.dumps(truncated_payload).encode("utf-8")
+            with self.assertRaises(MODULE.ReviewSkipped) as cm:
+                MODULE.call_openrouter("fake-key", "fake-model", [{"role": "user", "content": "hi"}])
+            self.assertIn("truncated", str(cm.exception))
+
+    def test_generate_review_batches_large_prs(self):
+        paths = [
+            f"records/2026/09/08/alice/prob-{i}/solution.py" for i in range(1, 7)
+        ]
+        batch_responses = [
+            (
+                "### 📁 records/2026/09/08/alice/prob-1\n구체적인 오류를 발견하지 못했습니다.\n\n"
+                "### 📁 records/2026/09/08/alice/prob-2\n구체적인 오류를 발견하지 못했습니다.\n\n"
+                "### 📁 records/2026/09/08/alice/prob-3\n구체적인 오류를 발견하지 못했습니다."
+            ),
+            (
+                "### 📁 records/2026/09/08/alice/prob-4\n구체적인 오류를 발견하지 못했습니다.\n\n"
+                "### 📁 records/2026/09/08/alice/prob-5\n구체적인 오류를 발견하지 못했습니다.\n\n"
+                "### 📁 records/2026/09/08/alice/prob-6\n구체적인 오류를 발견하지 못했습니다."
+            ),
+        ]
+
+        with patch.object(MODULE, "call_openrouter", side_effect=batch_responses) as mock_call, \
+             patch.object(MODULE, "collect_diff", return_value="dummy diff"), \
+             patch.object(MODULE, "collect_record_context", return_value="dummy context"), \
+             patch.object(MODULE, "review_group_descriptions", return_value=[(f"records/2026/09/08/alice/prob-{i}", "코딩 문제") for i in range(1, 7)]), \
+             patch.object(MODULE, "time"):
+            review = MODULE.generate_review(
+                "base", "head", paths, "alice/repo", 1, "key", "model", batch_size=3
+            )
+
+        self.assertEqual(mock_call.call_count, 2)
+        self.assertTrue(review.startswith("## 🤖 AI Code Review"))
+        self.assertIn("### ✅ Summary", review)
+        self.assertIn("prob-1", review)
+        self.assertIn("prob-6", review)
+        self.assertTrue(MODULE.validate_review_output(review))
+
 
 if __name__ == "__main__":
     unittest.main()
+
