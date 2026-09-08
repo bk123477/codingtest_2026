@@ -9,12 +9,16 @@
   "language": "python",
   "solution": "solution.py",
   "status": "solved",
-  "level": "",
+  "level": "Lv.1",
   "solve_method": "",
   "data_structures": [],
-  "algorithms": [],
+  "algorithms": [
+    "반복 시뮬레이션"
+  ],
   "tags": [
-    "none"
+    "수학",
+    "시뮬레이션",
+    "반복문"
   ],
   "minutes": null
 }

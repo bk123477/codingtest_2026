@@ -9,12 +9,19 @@
   "language": "python",
   "solution": "solution.py",
   "status": "solved",
-  "level": "",
+  "level": "Lv.1",
   "solve_method": "",
-  "data_structures": [],
-  "algorithms": [],
+  "data_structures": [
+    "문자열"
+  ],
+  "algorithms": [
+    "순회",
+    "카운팅"
+  ],
   "tags": [
-    "none"
+    "문자열",
+    "카운팅",
+    "대소문자"
   ],
   "minutes": null
 }

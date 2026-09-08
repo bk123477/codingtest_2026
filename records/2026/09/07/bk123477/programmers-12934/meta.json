@@ -9,9 +9,15 @@
   "language": "python",
   "solution": "solution.py",
   "status": "solved",
-  "level": "",
+  "level": "Lv.1",
+  "solve_method": "",
+  "data_structures": [],
+  "algorithms": [
+    "제곱근 판별"
+  ],
   "tags": [
-    "none"
+    "수학",
+    "제곱근"
   ],
   "minutes": null
 }

@@ -9,9 +9,16 @@
   "language": "python",
   "solution": "solution.py",
   "status": "solved",
-  "level": "",
+  "level": "Lv.1",
+  "solve_method": "",
+  "data_structures": [],
+  "algorithms": [
+    "완전 탐색"
+  ],
   "tags": [
-    "none"
+    "수학",
+    "나머지",
+    "완전탐색"
   ],
   "minutes": null
 }

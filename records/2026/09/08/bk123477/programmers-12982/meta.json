@@ -1,0 +1,26 @@
+{
+  "type": "problem",
+  "user": "bk123477",
+  "date": "2026-09-08",
+  "platform": "programmers",
+  "problem_id": "12982",
+  "url": "https://school.programmers.co.kr/learn/courses/30/lessons/12982",
+  "title": "예산",
+  "language": "python",
+  "solution": "solution.py",
+  "status": "solved",
+  "level": "Lv.1",
+  "solve_method": "self",
+  "data_structures": [
+    "리스트"
+  ],
+  "algorithms": [
+    "그리디",
+    "정렬"
+  ],
+  "tags": [
+    "그리디",
+    "정렬"
+  ],
+  "minutes": null
+}

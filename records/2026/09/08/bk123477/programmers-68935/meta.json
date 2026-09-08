@@ -1,0 +1,26 @@
+{
+  "type": "problem",
+  "user": "bk123477",
+  "date": "2026-09-08",
+  "platform": "programmers",
+  "problem_id": "68935",
+  "url": "https://school.programmers.co.kr/learn/courses/30/lessons/68935",
+  "title": "3진법 뒤집기",
+  "language": "python",
+  "solution": "solution.py",
+  "status": "solved",
+  "level": "Lv.1",
+  "solve_method": "self",
+  "data_structures": [
+    "리스트"
+  ],
+  "algorithms": [
+    "수학",
+    "구현"
+  ],
+  "tags": [
+    "수학",
+    "진법변환"
+  ],
+  "minutes": null
+}

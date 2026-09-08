@@ -9,9 +9,17 @@
   "language": "python",
   "solution": "solution.py",
   "status": "solved",
-  "level": "",
+  "level": "Lv.1",
+  "solve_method": "",
+  "data_structures": [
+    "문자열"
+  ],
+  "algorithms": [
+    "문자열 변환"
+  ],
   "tags": [
-    "string"
+    "문자열",
+    "형변환"
   ],
   "minutes": null
 }

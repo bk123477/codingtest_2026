@@ -9,9 +9,20 @@
   "language": "python",
   "solution": "solution.py",
   "status": "solved",
-  "level": "",
+  "level": "Lv.1",
+  "solve_method": "",
+  "data_structures": [
+    "문자열",
+    "리스트"
+  ],
+  "algorithms": [
+    "순회",
+    "역순 처리"
+  ],
   "tags": [
-    "string"
+    "문자열",
+    "배열",
+    "역순"
   ],
   "minutes": null
 }

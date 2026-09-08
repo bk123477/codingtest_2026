@@ -1,0 +1,27 @@
+{
+  "type": "problem",
+  "user": "bk123477",
+  "date": "2026-09-08",
+  "platform": "programmers",
+  "problem_id": "147355",
+  "url": "https://school.programmers.co.kr/learn/courses/30/lessons/147355",
+  "title": "크기가 작은 부분 문자열",
+  "language": "python",
+  "solution": "solution.py",
+  "status": "solved",
+  "level": "Lv.1",
+  "solve_method": "self",
+  "data_structures": [
+    "문자열"
+  ],
+  "algorithms": [
+    "문자열 처리",
+    "슬라이딩 윈도우"
+  ],
+  "tags": [
+    "문자열",
+    "부분문자열",
+    "슬라이딩윈도우"
+  ],
+  "minutes": null
+}

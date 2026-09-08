@@ -9,9 +9,19 @@
   "language": "python",
   "solution": "solution.py",
   "status": "solved",
-  "level": "",
+  "level": "Lv.1",
+  "solve_method": "",
+  "data_structures": [
+    "문자열"
+  ],
+  "algorithms": [
+    "순회",
+    "누적"
+  ],
   "tags": [
-    "none"
+    "수학",
+    "자릿수",
+    "형변환"
   ],
   "minutes": null
 }

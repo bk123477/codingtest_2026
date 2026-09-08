@@ -1,0 +1,24 @@
+{
+  "type": "problem",
+  "user": "bk123477",
+  "date": "2026-09-08",
+  "platform": "programmers",
+  "problem_id": "12969",
+  "url": "https://school.programmers.co.kr/learn/courses/30/lessons/12969",
+  "title": "직사각형 별찍기",
+  "language": "python",
+  "solution": "solution.py",
+  "status": "solved",
+  "level": "Lv.1",
+  "solve_method": "self",
+  "data_structures": [],
+  "algorithms": [
+    "구현"
+  ],
+  "tags": [
+    "구현",
+    "출력",
+    "반복문"
+  ],
+  "minutes": null
+}

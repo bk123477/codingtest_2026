@@ -1,0 +1,27 @@
+{
+  "type": "problem",
+  "user": "bk123477",
+  "date": "2026-09-08",
+  "platform": "programmers",
+  "problem_id": "134240",
+  "url": "https://school.programmers.co.kr/learn/courses/30/lessons/134240",
+  "title": "푸드 파이트 대회",
+  "language": "python",
+  "solution": "solution.py",
+  "status": "solved",
+  "level": "Lv.1",
+  "solve_method": "self",
+  "data_structures": [
+    "문자열"
+  ],
+  "algorithms": [
+    "문자열 처리",
+    "구현"
+  ],
+  "tags": [
+    "문자열",
+    "대칭",
+    "구현"
+  ],
+  "minutes": null
+}
