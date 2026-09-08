@@ -1,0 +1,91 @@
+name: Study Wiki
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# PRs have independent previews; production deployments are serialized.
+concurrency:
+  group: study-wiki-${{ github.event.pull_request.number || 'production' }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test tools and Wiki
+        run: |
+          python -m unittest discover -s tests -v
+          node --test tests/wiki_search.test.cjs
+          node --check study_wiki/assets/app.js
+          python study.py check
+      - name: Build PR preview
+        if: github.event_name == 'pull_request'
+        env:
+          WIKI_REPO: ${{ github.server_url }}/${{ github.repository }}
+          WIKI_REF: ${{ github.event.pull_request.head.sha }}
+        run: python wiki.py build --include-drafts --repo-url "$WIKI_REPO" --ref "$WIKI_REF"
+      - name: Build merged Wiki
+        if: github.event_name != 'pull_request'
+        env:
+          WIKI_REPO: ${{ github.server_url }}/${{ github.repository }}
+          WIKI_REF: ${{ github.sha }}
+        run: python wiki.py build --repo-url "$WIKI_REPO" --ref "$WIKI_REF"
+      - name: Save downloadable PR preview
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: wiki-preview-${{ github.event.pull_request.number }}
+          path: .study/wiki/
+          include-hidden-files: true
+          retention-days: 3
+      - name: Explain PR preview
+        if: github.event_name == 'pull_request'
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          manifest = json.loads(Path('.study/wiki/manifest.json').read_text())
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as out:
+              out.write('## Wiki 미리보기\n\n')
+              out.write(f'기록 {len(manifest["sources"])}건 (작성 중 포함).\n\n')
+              out.write('이 실행의 `wiki-preview` artifact를 내려받아 압축을 풀고 `index.html`을 여세요. ')
+              out.write('PR 미리보기는 공개 사이트를 덮어쓰지 않습니다. README의 분류·설명·채택한 리뷰 내용을 함께 검토하세요.\n')
+          PY
+      - name: Package GitHub Pages
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: .study/wiki/
+
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v5
+      - name: Publish Wiki
+        id: deployment
+        uses: actions/deploy-pages@v4

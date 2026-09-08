@@ -1,0 +1,123 @@
+name: Generate Wiki concept note
+
+on:
+  issues:
+    types: [opened]
+  workflow_dispatch:
+    inputs:
+      topic:
+        description: '개념 이름, 또는 auto (전체 완료 기록에서 탐색)'
+        default: auto
+        required: true
+        type: string
+      user:
+        description: '작성자 (비우면 전체 참여자)'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wiki-note-generation
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'issues' && startsWith(github.event.issue.title, '[Wiki 노트]') &&
+       contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.issue.author_association))
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Check requester permission
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          REQUESTER: ${{ github.actor }}
+        run: |
+          permission=$(gh api "repos/$REPO/collaborators/$REQUESTER/permission" --jq '.permission')
+          case "$permission" in
+            admin|maintain|write) ;;
+            *) echo '저장소 쓰기 권한이 있는 참여자만 생성할 수 있습니다.'; exit 1 ;;
+          esac
+      - uses: actions/checkout@v6
+        with:
+          ref: main
+          persist-credentials: true
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Restore completed source analyses
+        uses: actions/cache/restore@v4
+        with:
+          path: .study/wiki-analysis
+          key: wiki-analysis-v1-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            wiki-analysis-v1-
+      - name: Generate one free Nemotron draft
+        id: note
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          WIKI_MODEL: ${{ vars.WIKI_MODEL || 'nvidia/nemotron-3.5-lightning:free' }}
+        run: python -m study_wiki.generate --event "$GITHUB_EVENT_PATH" --ref "$(git rev-parse HEAD)"
+      - name: Persist progress, including interrupted runs
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .study/wiki-analysis
+          key: wiki-analysis-v1-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Report analysis progress
+        if: always()
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          path=Path('.study/wiki-analysis/progress.json')
+          if path.exists():
+              progress=json.loads(path.read_text())
+              with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as out:
+                  out.write('## 개념 노트 분석 진행\n\n')
+                  out.write(f"상태: {progress['status']} · 원본 {progress['sources']}개 · 분석 조각 {progress['completed_chunks']}/{progress['chunks']} · 이번 호출 {progress['calls']}회 · 캐시 재사용 {progress['cache_hits']}회\n\n")
+                  out.write('중단된 경우 같은 요청을 다시 실행하면 저장된 분석을 재사용합니다.\n')
+          PY
+      - name: Validate and save preview
+        run: |
+          python -m unittest discover -s tests -p 'test_wiki*.py' -v
+          python wiki.py build
+      - name: Save draft even if PR creation is unavailable
+        uses: actions/upload-artifact@v4
+        with:
+          name: wiki-concept-draft-${{ github.run_id }}
+          path: wiki_notes/generated/
+          retention-days: 7
+      - name: Open review PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NOTE_PATH: ${{ steps.note.outputs.note_path }}
+          REQUEST_URL: ${{ github.event.issue.html_url }}
+        run: |
+          branch="wiki/ai-note-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          git switch -c "$branch"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- "$NOTE_PATH"
+          git commit -m 'wiki: add AI concept note draft'
+          git push origin "$branch"
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          body = 'AI가 관련 완료 기록 전체를 분석하여 생성한 개념 노트 초안입니다.\n\n'
+          body += '- [ ] 원본 인용과 개념 설명을 확인했습니다.\n'
+          body += '- [ ] 검토를 마쳤다면 meta.json의 review_status를 reviewed로 변경했습니다.\n\n'
+          body += '자동 생성 노트는 일일 학습 목표에 합산하지 않습니다.\n'
+          if os.environ.get('REQUEST_URL'):
+              body += '\n생성 요청: ' + os.environ['REQUEST_URL'] + '\n'
+          Path('/tmp/wiki-note-pr.md').write_text(body)
+          PY
+          gh pr create --base main --head "$branch" --title 'wiki: AI 개념 노트 검토' --body-file /tmp/wiki-note-pr.md
+          echo 'AI 개념 노트 PR을 생성했습니다. 원본과 설명을 확인한 뒤 merge하세요.' >> "$GITHUB_STEP_SUMMARY"

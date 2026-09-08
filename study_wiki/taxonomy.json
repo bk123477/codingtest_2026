@@ -1,0 +1,30 @@
+{
+  "data_structures": {
+    "배열": ["array", "list", "리스트"],
+    "해시": ["hash", "hashmap", "dict", "딕셔너리", "해시맵"],
+    "집합": ["set"],
+    "스택": ["stack"],
+    "큐": ["queue"],
+    "덱": ["deque"],
+    "힙": ["heap", "우선순위 큐"],
+    "트리": ["tree"],
+    "그래프": ["graph"],
+    "연결 리스트": ["linked list"]
+  },
+  "algorithms": {
+    "정렬": ["sort", "sorting"],
+    "이진 탐색": ["binary search", "이분 탐색"],
+    "완전 탐색": ["brute force", "브루트포스"],
+    "깊이 우선 탐색": ["dfs"],
+    "너비 우선 탐색": ["bfs"],
+    "동적 계획법": ["dp", "dynamic programming"],
+    "그리디": ["greedy", "탐욕법"],
+    "투 포인터": ["two pointers", "투포인터"],
+    "슬라이딩 윈도우": ["sliding window"],
+    "누적 합": ["prefix sum", "누적합"],
+    "백트래킹": ["backtracking"],
+    "구현": ["implementation"],
+    "문자열 처리": ["string", "문자열"],
+    "수학": ["math"]
+  }
+}
