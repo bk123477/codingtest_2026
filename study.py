@@ -5,12 +5,14 @@ from collections import Counter
 from datetime import date, datetime, timedelta, timezone
 import html
 import json
+import os
 from pathlib import Path, PurePosixPath
 import re
 import subprocess
 import sys
 from string import Template
 from urllib.parse import quote, urlsplit, urlunsplit
+from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parent
 LANGUAGES = {
@@ -116,34 +118,257 @@ def local():
 
 
 def git(*args):
-    return subprocess.run(['git', *args], cwd=ROOT, check=True, text=True, capture_output=True).stdout.strip()
+    return subprocess.run(
+        ['git', *args],
+        cwd=ROOT,
+        check=True,
+        text=True,
+        capture_output=True,
+    ).stdout.strip()
+
+
+def github_repository(remote):
+    """Return (owner, repo) when the Git remote points to github.com."""
+    try:
+        remote_url = git('remote', 'get-url', remote).strip()
+    except subprocess.CalledProcessError:
+        return None
+
+    # git@github.com:owner/repo.git
+    if remote_url.startswith('git@github.com:'):
+        path = remote_url.removeprefix('git@github.com:')
+    else:
+        # https://github.com/owner/repo.git
+        # ssh://git@github.com/owner/repo.git
+        parsed = urlsplit(remote_url)
+        if parsed.hostname != 'github.com':
+            return None
+        path = parsed.path.lstrip('/')
+
+    path = path.rstrip('/').removesuffix('.git')
+    parts = path.split('/')
+
+    if (
+        len(parts) != 2
+        or not all(re.fullmatch(r'[A-Za-z0-9_.-]+', part) for part in parts)
+    ):
+        return None
+
+    return tuple(parts)
+
+
+def github_api_json(url):
+    """Read JSON from the GitHub API.
+
+    API/network failures return None so branch cleanup always fails safe.
+    """
+    headers = {
+        'Accept': 'application/vnd.github+json',
+        'User-Agent': 'codingtest-2026-study-cli',
+        'X-GitHub-Api-Version': '2022-11-28',
+    }
+
+    # Optional. Public repositories also work without a token.
+    token = os.environ.get('GH_TOKEN') or os.environ.get('GITHUB_TOKEN')
+    if token:
+        headers['Authorization'] = f'Bearer {token}'
+
+    request = Request(url, headers=headers)
+
+    try:
+        with urlopen(request, timeout=5) as response:
+            return json.loads(response.read().decode('utf-8'))
+    except (OSError, ValueError):
+        # Network failure, rate limit, invalid JSON, etc.
+        # Never force-delete a branch when verification is unavailable.
+        return None
+
+
+def github_merged_pr(repository, base_branch, branch, tip):
+    """Return the merged PR proving that this exact local branch tip was merged.
+
+    Returns:
+      dict  -> exact merged PR found
+      False -> GitHub responded, but no matching merged PR exists
+      None  -> GitHub verification was unavailable
+    """
+    if repository is None:
+        return None
+
+    owner, repo = repository
+
+    url = (
+        f'https://api.github.com/repos/'
+        f'{quote(owner, safe="")}/{quote(repo, safe="")}'
+        f'/commits/{quote(tip, safe="")}/pulls'
+    )
+
+    pull_requests = github_api_json(url)
+
+    if not isinstance(pull_requests, list):
+        return None
+
+    for pr in pull_requests:
+        head = pr.get('head') or {}
+        base = pr.get('base') or {}
+
+        # All four conditions must match.
+        #
+        # 1. The PR was actually merged.
+        # 2. It was merged into the expected base branch.
+        # 3. The PR's original branch name matches this local branch.
+        # 4. The PR's exact head commit still matches this local branch tip.
+        #
+        # Condition 4 is particularly important:
+        # if a user added commits locally after the PR was merged,
+        # the branch must NOT be deleted.
+        if (
+            pr.get('merged_at')
+            and base.get('ref') == base_branch
+            and head.get('ref') == branch
+            and head.get('sha') == tip
+        ):
+            return pr
+
+    return False
 
 
 def cleanup_merged_branches(remote, base_branch, protected_branches=()):
-    """Update the base branch and safely remove local branches already merged into it."""
-    require(not git('status', '--porcelain'), '미커밋 변경이 있어 브랜치 정리를 중단합니다. 먼저 커밋하거나 별도로 보관하세요.')
+    """Update base and safely remove locally completed branches.
+
+    Normal merge:
+        Git can prove ancestry -> git branch -d
+
+    Squash / rebase merge:
+        GitHub must prove that the exact local tip was the head of a merged PR
+        -> git branch -D
+    """
+    require(
+        not git('status', '--porcelain'),
+        '미커밋 변경이 있어 브랜치 정리를 중단합니다. '
+        '먼저 커밋하거나 별도로 보관하세요.',
+    )
+
     if git('branch', '--show-current') != base_branch:
         git('switch', base_branch)
+
     git('fetch', '--prune', remote)
     git('pull', '--ff-only', remote, base_branch)
 
+    local_branches = [
+        branch.strip()
+        for branch in git(
+            'branch',
+            '--format=%(refname:short)',
+        ).splitlines()
+        if branch.strip()
+    ]
+
+    merged_branches = {
+        branch.strip()
+        for branch in git(
+            'branch',
+            '--merged',
+            base_branch,
+            '--format=%(refname:short)',
+        ).splitlines()
+        if branch.strip()
+    }
+
+    repository = github_repository(remote)
+
+    # If the remote is GitHub, branches that Git cannot identify as merged
+    # may still have been squash/rebase merged.
+    github_check_available = repository is not None
+    github_check_failed = False
+
     deleted = []
-    branches = git('branch', '--merged', base_branch, '--format=%(refname:short)').splitlines()
-    for branch in branches:
-        branch = branch.strip()
-        if not branch or branch == base_branch or branch in protected_branches:
+    deleted_labels = []
+
+    for branch in local_branches:
+        if (
+            branch == base_branch
+            or branch in protected_branches
+        ):
             continue
+
+        # Case 1: normal merge.
+        #
+        # Git itself can prove that the branch tip is already reachable
+        # from main, so ordinary safe deletion (-d) is sufficient.
+        if branch in merged_branches:
+            try:
+                git('branch', '-d', branch)
+            except subprocess.CalledProcessError:
+                # For example, the branch may be checked out
+                # in another worktree.
+                continue
+
+            deleted.append(branch)
+            deleted_labels.append(branch)
+            continue
+
+        # Case 2: squash/rebase merge.
+        #
+        # The commit graph alone cannot prove the merge, so require
+        # GitHub to confirm the exact branch name + exact tip SHA.
+        if not github_check_available:
+            continue
+
+        tip = git('rev-parse', f'refs/heads/{branch}')
+
+        pr = github_merged_pr(
+            repository,
+            base_branch,
+            branch,
+            tip,
+        )
+
+        if pr is None:
+            # Stop using the API for the remainder of this cleanup run.
+            # Nothing is force-deleted when verification is uncertain.
+            github_check_available = False
+            github_check_failed = True
+            continue
+
+        if not pr:
+            continue
+
         try:
-            git('branch', '-d', branch)
+            # Git cannot prove ancestry after squash/rebase,
+            # but GitHub has proved that this exact tip was merged.
+            git('branch', '-D', branch)
         except subprocess.CalledProcessError:
-            # Keep branches that Git cannot prove are safely merged.
+            # Keep worktree-in-use branches and any other branch
+            # Git refuses to delete.
             continue
+
         deleted.append(branch)
 
+        number = pr.get('number')
+        if isinstance(number, int):
+            deleted_labels.append(
+                f'{branch} (GitHub PR #{number} 확인)'
+            )
+        else:
+            deleted_labels.append(
+                f'{branch} (GitHub PR 병합 확인)'
+            )
+
     if deleted:
-        print('병합 완료 로컬 브랜치 정리: ' + ', '.join(deleted))
+        print(
+            '병합 완료 로컬 브랜치 정리: '
+            + ', '.join(deleted_labels)
+        )
     else:
         print('삭제할 병합 완료 로컬 브랜치가 없습니다.')
+
+    if github_check_failed:
+        print(
+            'GitHub PR 병합 여부를 확인하지 못해 '
+            'Git이 병합으로 판단하지 않는 브랜치는 보존했습니다.'
+        )
+
     return deleted
 
 

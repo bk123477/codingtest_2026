@@ -262,6 +262,123 @@ class StudyTest(unittest.TestCase):
         self.assertIn('already-merged', output)
         self.assertNotIn('already-merged', self.run_git('branch', '--format=%(refname:short)').splitlines())
 
+    def test_github_merged_pr_requires_exact_branch_tip(self):
+        branch = 'study/alice/2026-09-08'
+        tip = 'a' * 40
+
+        merged_pr = {
+            'number': 17,
+            'merged_at': '2026-09-08T08:44:10Z',
+            'base': {
+                'ref': 'main',
+            },
+            'head': {
+                'ref': branch,
+                'sha': tip,
+            },
+        }
+
+        with patch.object(
+            study,
+            'github_api_json',
+            return_value=[merged_pr],
+        ):
+            result = study.github_merged_pr(
+                ('alice', 'repo'),
+                'main',
+                branch,
+                tip,
+            )
+
+        self.assertEqual(result['number'], 17)
+
+        # The PR was merged, but the local branch has moved forward.
+        # It must no longer be considered safe to delete.
+        with patch.object(
+            study,
+            'github_api_json',
+            return_value=[merged_pr],
+        ):
+            result = study.github_merged_pr(
+                ('alice', 'repo'),
+                'main',
+                branch,
+                'b' * 40,
+            )
+
+        self.assertFalse(result)
+
+    def test_cleanup_removes_squash_merged_branch_after_github_confirmation(self):
+        branch = 'squash-merged'
+
+        self.run_git('switch', '-c', branch)
+
+        (self.root / 'squashed.txt').write_text(
+            'squash test\n',
+            encoding='utf-8',
+        )
+
+        self.run_git('add', 'squashed.txt')
+        self.run_git('commit', '-m', 'feature commit')
+
+        tip = self.run_git('rev-parse', 'HEAD')
+
+        self.run_git('switch', 'main')
+
+        # Reproduce GitHub "Squash and merge":
+        # the contents enter main through a new commit, while the original
+        # feature commit itself is NOT an ancestor of main.
+        self.run_git('merge', '--squash', branch)
+        self.run_git('commit', '-m', 'squash merge')
+        self.run_git('push', 'origin', 'main')
+
+        merged = self.run_git(
+            'branch',
+            '--merged',
+            'main',
+            '--format=%(refname:short)',
+        ).splitlines()
+
+        self.assertNotIn(branch, merged)
+
+        pr = {
+            'number': 17,
+            'merged_at': '2026-09-08T08:44:10Z',
+            'base': {
+                'ref': 'main',
+            },
+            'head': {
+                'ref': branch,
+                'sha': tip,
+            },
+        }
+
+        with (
+            patch.object(
+                study,
+                'github_repository',
+                return_value=('alice', 'repo'),
+            ),
+            patch.object(
+                study,
+                'github_merged_pr',
+                return_value=pr,
+            ),
+        ):
+            output = self.cli('cleanup-merged-branches')
+
+        self.assertIn(
+            'squash-merged (GitHub PR #17 확인)',
+            output,
+        )
+
+        branches = self.run_git(
+            'branch',
+            '--format=%(refname:short)',
+        ).splitlines()
+
+        self.assertNotIn(branch, branches)
+
     def test_start_goal_applies_only_to_that_day(self):
         self.cli('start', '--goal', '3', '--date', DAY)
         profile = study.profiles()['alice']

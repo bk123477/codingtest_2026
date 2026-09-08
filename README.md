@@ -194,11 +194,21 @@ git branch -d study/내GitHub아이디/완료날짜
 bash scripts/cleanup-merged-branches.sh
 ```
 
-이 스크립트는 `main`을 최신화하고 원격 추적 정보도 prune한 뒤,
-`git branch --merged main`에 표시되는 브랜치만 `git branch -d`로 삭제합니다.
+이 스크립트는 `main`을 최신화하고 원격 추적 정보를 prune한 뒤 로컬 브랜치를 정리합니다.
+
+일반 merge처럼 Git이 병합 여부를 직접 확인할 수 있는 브랜치는
+`git branch --merged main` 결과를 기준으로 `git branch -d`로 삭제합니다.
+
+GitHub에서 **Squash and merge** 또는 rebase 방식으로 병합되어 Git이
+병합 여부를 확인할 수 없는 브랜치는 GitHub API에서 해당 로컬 브랜치의
+현재 HEAD와 PR의 원래 head SHA·브랜치명·base 브랜치·병합 상태가 모두
+일치하는 경우에만 `git branch -D`로 정리합니다.
+
+PR 병합 여부를 확인할 수 없거나, 병합 이후 로컬 브랜치에 새 커밋이
+추가된 경우에는 강제로 삭제하지 않고 그대로 보존합니다.
+
 또는 `python3 study.py start --date YYYY-MM-DD`를 실행하면 같은 정리 절차가
-새 일일 브랜치를 만들기 전에 자동으로 실행됩니다. 미커밋 변경사항이 있으면
-정리와 브랜치 생성 모두 중단됩니다.
+새 일일 브랜치를 만들기 전에 자동으로 실행됩니다.
 
 ## 코딩 에이전트로 기록하기
 
