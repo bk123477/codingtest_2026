@@ -6,7 +6,7 @@
 
 명령 입력과 문서 정리를 코딩 에이전트에게 맡기고 싶다면 [에이전트로 기록하기](#코딩-에이전트로-기록하기)를 보세요.
 
-[학습 현황](https://github.com/bk123477/codingtest_2026/tree/progress) · [템플릿 상세 설명](docs/templates.md) · [참여 중 문제 해결](CONTRIBUTING.md) · [운영자 안내](docs/setup.md) · [AI 코드리뷰 설정](docs/ai-code-review.md) · [코딩 문제 예시](examples/h-index/) · [학습 정리 예시](examples/learning-note/)
+[Wiki 사용·배포 안내](docs/wiki.md) · [학습 현황](https://github.com/bk123477/codingtest_2026/tree/progress) · [템플릿 상세 설명](docs/templates.md) · [참여 중 문제 해결](CONTRIBUTING.md) · [운영자 안내](docs/setup.md) · [AI 코드리뷰 설정](docs/ai-code-review.md) · [코딩 문제 예시](examples/h-index/) · [학습 정리 예시](examples/learning-note/)
 
 ## 이 스터디에서 하는 일
 
@@ -239,6 +239,23 @@ AGENTS.md를 읽고 오늘 날짜의 학습 정리를 만들어줘.
 초안을 읽은 뒤에는 “내용 확인했어. 완료 처리하고 오늘 PR 본문을 준비해줘”라고 이어서 요청할 수 있습니다. 풀이 파일이나 메모에 없는 채점 결과·학습 경험은 에이전트가 임의로 채우지 않도록 안내해 두었습니다. 문제와 정리 여러 개를 한 번에 전달해도 같은 날짜의 PR 하나로 묶습니다.
 
 Git 명령 실행도 맡기고 싶으면 “검증 후 commit, push하고 PR도 만들어줘”처럼 원하는 범위를 적으세요. 실제 실행은 해당 도구의 터미널 권한과 GitHub 인증이 필요합니다. `AGENTS.md` 자체는 실행 프로그램이 아니며, `study.py`에 AI나 유료 API를 추가한 구성은 아닙니다. 사용하는 코딩 에이전트의 요금·이용 한도는 별도입니다.
+
+## 풀이와 학습 정리를 Wiki로 보기
+
+`study.py`와 분리된 도구가 원본 기록을 개인별·개념별·문제별 Wiki로 연결합니다.
+검색·작성자·자료구조·알고리즘 필터와 코드·학습 노트 상세 화면을 제공합니다.
+기본 조회에는 외부 API나 추가 Python 패키지가 필요하지 않습니다.
+개념 연결·기출 모음·도움말을 제공하고, 선택적으로 무료 Nemotron 개념 노트 생성을 요청할 수 있습니다.
+
+```bash
+python3 wiki.py build --include-drafts
+python3 wiki.py serve
+# http://127.0.0.1:8765
+```
+
+PR에서는 다운로드 가능한 미리보기를 검토하고, main merge 후에는 GitHub Pages에
+완료 기록을 자동 배포합니다. 운영자의 첫 Pages 설정이 필요합니다.
+개인 Wiki, 에이전트 기록 보완, 리뷰 반영과 배포 방법은 [Wiki 안내](docs/wiki.md)를 보세요.
 
 ## 템플릿은 어떻게 쓰이나요?
 
