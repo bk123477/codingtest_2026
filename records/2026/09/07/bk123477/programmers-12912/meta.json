@@ -9,9 +9,16 @@
   "language": "python",
   "solution": "solution.py",
   "status": "solved",
-  "level": "",
+  "level": "Lv.1",
+  "solve_method": "",
+  "data_structures": [],
+  "algorithms": [
+    "반복"
+  ],
   "tags": [
-    "none"
+    "수학",
+    "누적합",
+    "반복문"
   ],
   "minutes": null
 }

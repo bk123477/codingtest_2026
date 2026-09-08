@@ -9,9 +9,18 @@
   "language": "python",
   "solution": "solution.py",
   "status": "solved",
-  "level": "",
+  "level": "Lv.1",
+  "solve_method": "",
+  "data_structures": [
+    "리스트"
+  ],
+  "algorithms": [
+    "반복"
+  ],
   "tags": [
-    "none"
+    "수학",
+    "배열",
+    "등차수열"
   ],
   "minutes": null
 }

@@ -1,0 +1,27 @@
+{
+  "type": "problem",
+  "user": "bk123477",
+  "date": "2026-09-08",
+  "platform": "programmers",
+  "problem_id": "12930",
+  "url": "https://school.programmers.co.kr/learn/courses/30/lessons/12930",
+  "title": "이상한 문자 만들기",
+  "language": "python",
+  "solution": "solution.py",
+  "status": "solved",
+  "level": "Lv.1",
+  "solve_method": "self",
+  "data_structures": [
+    "문자열"
+  ],
+  "algorithms": [
+    "문자열 처리",
+    "구현"
+  ],
+  "tags": [
+    "문자열",
+    "대소문자",
+    "인덱스"
+  ],
+  "minutes": null
+}

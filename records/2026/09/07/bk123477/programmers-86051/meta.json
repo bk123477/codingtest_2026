@@ -9,9 +9,19 @@
   "language": "python",
   "solution": "solution.py",
   "status": "solved",
-  "level": "",
+  "level": "Lv.1",
+  "solve_method": "",
+  "data_structures": [
+    "리스트"
+  ],
+  "algorithms": [
+    "완전 탐색",
+    "누적"
+  ],
   "tags": [
-    "none"
+    "수학",
+    "배열",
+    "합계"
   ],
   "minutes": null
 }

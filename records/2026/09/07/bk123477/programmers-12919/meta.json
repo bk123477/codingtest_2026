@@ -9,12 +9,18 @@
   "language": "python",
   "solution": "solution.py",
   "status": "solved",
-  "level": "",
+  "level": "Lv.1",
   "solve_method": "",
-  "data_structures": [],
-  "algorithms": [],
+  "data_structures": [
+    "리스트"
+  ],
+  "algorithms": [
+    "선형 탐색"
+  ],
   "tags": [
-    "none"
+    "배열",
+    "탐색",
+    "index"
   ],
   "minutes": null
 }

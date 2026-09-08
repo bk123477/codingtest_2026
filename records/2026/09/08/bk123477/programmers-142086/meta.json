@@ -1,0 +1,27 @@
+{
+  "type": "problem",
+  "user": "bk123477",
+  "date": "2026-09-08",
+  "platform": "programmers",
+  "problem_id": "142086",
+  "url": "https://school.programmers.co.kr/learn/courses/30/lessons/142086",
+  "title": "가장 가까운 같은 글자",
+  "language": "python",
+  "solution": "solution.py",
+  "status": "solved",
+  "level": "Lv.1",
+  "solve_method": "self",
+  "data_structures": [
+    "해시",
+    "리스트"
+  ],
+  "algorithms": [
+    "해시"
+  ],
+  "tags": [
+    "문자열",
+    "해시",
+    "딕셔너리"
+  ],
+  "minutes": null
+}
