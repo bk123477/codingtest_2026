@@ -20,7 +20,7 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 
-DEFAULT_MODEL = "minimax/minimax-m3:free"
+DEFAULT_MODEL = "nvidia/nemotron-3.5-lightning:free"
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 COMMENT_MARKER = "<!-- openrouter-ai-code-review -->"
 MAX_FILE_DIFF_CHARS = 30_000

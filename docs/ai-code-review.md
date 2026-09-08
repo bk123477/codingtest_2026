@@ -1,7 +1,7 @@
 # OpenRouter AI 코드리뷰
 
 이 저장소는 PR이 열리거나 새 commit이 올라오거나 다시 열릴 때
-OpenRouter의 `minimax/minimax-m3:free` 모델로 변경사항을 리뷰하고,
+OpenRouter의 `nvidia/nemotron-3.5-lightning:free` 모델로 변경사항을 리뷰하고,
 기록 폴더별로 나눈 하나의 PR 댓글을 생성하거나 갱신합니다.
 
 ## 동작 흐름
@@ -34,7 +34,7 @@ PR 브랜치의 workflow나 코드를 checkout하거나 실행하지 않고, bas
 모델 ID를 입력하세요. 변수가 없으면 다음 기본값을 사용합니다.
 
 ```text
-minimax/minimax-m3:free
+nvidia/nemotron-3.5-lightning:free
 ```
 
 ## 로컬 `.env`
