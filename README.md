@@ -128,6 +128,10 @@ python3 study.py new 문제URL --title "문제 제목" --difficulty "Level 1" \
   --solve-method self --data-structures "배열, 해시" --algorithms "정렬"
 ```
 
+LLM이 실제 풀이에서 기존 taxonomy에 없는 자료구조·알고리즘을 확인했다면
+`new`, `done`, `enrich`에 `--add-taxonomy`를 붙여 `study_wiki/taxonomy.json`에 등록할 수 있습니다.
+taxonomy 변경은 일일 기록 PR과 분리된 관리 PR에서 사람이 근거와 별칭을 검토합니다.
+
 이미 만든 기록은 `done`에 같은 옵션을 붙여 갱신합니다. 풀이 방식은 `self`(스스로 해결), `hint`(힌트 참고), `answer`(답안·해설 참고) 중 하나입니다.
 
 ### 2-B. 코테 대신 공부한 내용을 정리하는 경우

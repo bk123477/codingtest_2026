@@ -1,7 +1,11 @@
 import unittest
+import json
+import tempfile
+from pathlib import Path
 from unittest.mock import patch
 
-from study_wiki.common import TAXONOMY, alias_map, classify, normalize, term_key
+from study_wiki.common import (TAXONOMY, TAXONOMY_PATH, alias_map, classify,
+                                normalize, register_taxonomy, term_key)
 from study_wiki.knowledge import concept_graph
 
 
@@ -35,3 +39,26 @@ class TaxonomyTest(unittest.TestCase):
                     self.assertEqual(normalize([term_key(alias)], field), [canonical])
         record = classify({'tags': ['dfs', '리스트', '반복']})
         self.assertEqual(classify(record), record)
+
+    def test_llm_new_terms_are_registered_with_aliases(self):
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / 'taxonomy.json'
+            target.write_bytes(TAXONOMY_PATH.read_bytes())
+            result = register_taxonomy({
+                'data_structures': [{'name': '세그먼트 트리', 'aliases': ['segment tree', 'SegmentTree']}],
+                'algorithms': [{'name': '파라메트릭 서치', 'aliases': ['parametric search']}],
+            }, target)
+            self.assertEqual(result['added'], ['세그먼트 트리', '파라메트릭 서치'])
+            taxonomy = json.loads(target.read_text())
+            self.assertEqual(taxonomy['data_structures']['세그먼트 트리'], ['segment tree'])
+            self.assertEqual(normalize(['segmenttree'], 'data_structures', taxonomy), ['세그먼트 트리'])
+            self.assertEqual(normalize(['PARAMETRICSEARCH'], 'algorithms', taxonomy), ['파라메트릭 서치'])
+
+    def test_new_term_alias_collision_is_rejected_without_writing(self):
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / 'taxonomy.json'
+            target.write_bytes(TAXONOMY_PATH.read_bytes())
+            before = target.read_bytes()
+            with self.assertRaisesRegex(ValueError, '충돌'):
+                register_taxonomy({'algorithms': [{'name': '새 알고리즘', 'aliases': ['DFS']}]}, target)
+            self.assertEqual(target.read_bytes(), before)

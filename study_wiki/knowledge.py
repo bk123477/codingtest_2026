@@ -78,7 +78,7 @@ def read_ai_notes(root, human_records, user=None):
         if user and user not in contributors:
             continue
         body = safe_file(root, folder/'README.md').read_text(encoding='utf-8')
-        tags = normalize(data.get('topics', []), 'algorithms')
+        tags = normalize(data.get('topics', []), 'tags')
         stale = any(s['id'] not in humans or humans[s['id']]['source_hash'] != s['hash'] for s in sources)
         results.append(dict(id=folder.relative_to(root).as_posix(), kind='ai_note', user='AI', contributors=contributors,
                             title=data['title'], date=data['date'], status=data['review_status'], language='',level='',
