@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+import shutil
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -167,6 +168,21 @@ class WikiTest(unittest.TestCase):
             enrich.enrich(folder,dict(tags=['Git']))
         self.assertEqual(json.loads((folder/'meta.json').read_text())['status'],'draft')
         self.assertEqual(readme,(folder/'README.md').read_bytes())
+
+    def test_enrich_can_register_llm_discovered_core_terms(self):
+        folder=self.record(status='draft')
+        (self.root/'members').mkdir()
+        (self.root/'members/alice.json').write_text(json.dumps(dict(user='alice',joined='2026-09-08',goals=[{'from':'2026-09-08','daily_goal':5}])))
+        (self.root/'study_wiki').mkdir()
+        shutil.copy(Path(study.__file__).parent/'study_wiki/taxonomy.json', self.root/'study_wiki/taxonomy.json')
+        with patch.object(study,'ROOT',self.root):
+            enrich.enrich(folder, dict(data_structures=['세그먼트 트리'], algorithms=['파라메트릭 서치']), add_taxonomy=True)
+        taxonomy=json.loads((self.root/'study_wiki/taxonomy.json').read_text())
+        self.assertIn('세그먼트 트리', taxonomy['data_structures'])
+        self.assertIn('파라메트릭 서치', taxonomy['algorithms'])
+        data=json.loads((folder/'meta.json').read_text())
+        self.assertEqual(data['data_structures'],['세그먼트 트리'])
+        self.assertEqual(data['algorithms'],['파라메트릭 서치'])
 
 
 if __name__=='__main__':unittest.main()

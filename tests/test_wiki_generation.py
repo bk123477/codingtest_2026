@@ -1,4 +1,5 @@
 import json
+import shutil
 from pathlib import Path
 import tempfile
 import unittest
@@ -81,11 +82,32 @@ class GenerationTest(unittest.TestCase):
     def test_valid_model_response_and_truncation(self):
         from io import BytesIO
         payload={'choices':[{'finish_reason':'stop','message':{'content':json.dumps(self.response)}}]}
-        with patch('study_wiki.generate.urlopen',return_value=BytesIO(json.dumps(payload).encode())):
-            self.assertEqual(call_model(self.sources,'해시',api_key='test-key'),self.response)
+        with patch('study_wiki.generate.urlopen',return_value=BytesIO(json.dumps(payload).encode())) as request:
+            generated=call_model(self.sources,'해시',api_key='test-key')
+            self.assertEqual(generated,self.response)
+            sent=json.loads(request.call_args.args[0].data)
+            self.assertIn('taxonomy.json',sent['messages'][0]['content'])
+            self.assertIn('data_structures',sent['messages'][0]['content'])
         payload['choices'][0]['finish_reason']='length'
         with patch('study_wiki.generate.urlopen',return_value=BytesIO(json.dumps(payload).encode())):
             with self.assertRaises(ValueError):call_model(self.sources,'해시',api_key='test-key')
+
+    def test_new_ai_concept_registers_taxonomy_for_review_pr(self):
+        (self.root/'study_wiki').mkdir()
+        shutil.copy(Path(__file__).resolve().parents[1]/'study_wiki/taxonomy.json', self.root/'study_wiki/taxonomy.json')
+        result=dict(self.response, topics=['세그먼트 트리'],
+                    new_taxonomy={'data_structures':[{'name':'세그먼트 트리','aliases':['segment tree']}], 'algorithms':[]})
+        folder=save_note(self.root,result,self.sources,DEFAULT_MODEL,'auto','','ref')
+        taxonomy=json.loads((self.root/'study_wiki/taxonomy.json').read_text())
+        self.assertEqual(taxonomy['data_structures']['세그먼트 트리'],['segment tree'])
+        metadata=json.loads((folder/'meta.json').read_text())
+        self.assertEqual(metadata['topics'],['세그먼트 트리'])
+        self.assertIn('세그먼트 트리',metadata['taxonomy_updates']['data_structures'][0]['name'])
+
+    def test_unknown_ai_topic_must_include_taxonomy_proposal(self):
+        result=dict(self.response, topics=['새 알고리즘'])
+        with self.assertRaisesRegex(ValueError,'new_taxonomy'):
+            save_note(self.root,result,self.sources,DEFAULT_MODEL,'auto','','ref')
 
     def test_concepts_have_evidence_and_ignore_generic_tags(self):
         graph=concept_graph(read_records(self.root))

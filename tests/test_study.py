@@ -50,6 +50,16 @@ class StudyTest(unittest.TestCase):
         self.assertEqual(data['tags'], ['누적 합', '처음 보는 표현'])
         self.assertIn('- 자료구조: 힙', (folder / 'README.md').read_text())
 
+    def test_new_can_register_llm_discovered_core_terms(self):
+        (self.root / 'study_wiki').mkdir()
+        shutil.copy(SOURCE / 'study_wiki' / 'taxonomy.json', self.root / 'study_wiki' / 'taxonomy.json')
+        self.cli('new', URL, '--title', '새 자료구조 문제', '--date', DAY,
+                 '--data-structures', '세그먼트 트리', '--add-taxonomy')
+        folder = study.daily_path('alice', DAY) / 'programmers-42747'
+        taxonomy = json.loads((self.root / 'study_wiki' / 'taxonomy.json').read_text())
+        self.assertIn('세그먼트 트리', taxonomy['data_structures'])
+        self.assertEqual(json.loads((folder / 'meta.json').read_text())['data_structures'], ['세그먼트 트리'])
+
     def run_git(self, *args):
         return subprocess.run(['git', *args], cwd=self.root, check=True, capture_output=True, text=True).stdout.strip()
 

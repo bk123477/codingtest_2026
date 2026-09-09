@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Dependency-free study CLI. Dates use Korea Standard Time (UTC+09:00)."""
-from study_wiki.common import normalize
+from study_wiki.common import normalize, register_taxonomy, unknown_taxonomy_terms
 
 import argparse
 from collections import Counter
@@ -681,6 +681,10 @@ def cmd_new(args):
             'level': args.level, 'solve_method': args.solve_method,
             'data_structures': normalize(csv_values(args.data_structures), 'data_structures'), 'algorithms': normalize(csv_values(args.algorithms), 'algorithms'),
             'tags': normalize(csv_values(args.tags), 'tags'), 'minutes': None}
+    if args.add_taxonomy:
+        register_taxonomy(unknown_taxonomy_terms(data), path=ROOT / 'study_wiki' / 'taxonomy.json')
+        data['data_structures'] = normalize(data['data_structures'], 'data_structures')
+        data['algorithms'] = normalize(data['algorithms'], 'algorithms')
     content = Template((ROOT / 'templates/problem.md').read_text(encoding='utf-8')).substitute(
         **data, level_text=data['level'] or '미입력', solve_method_text=solving_method_label(data['solve_method']),
         data_structures_text=metadata_text(data['data_structures']), algorithms_text=metadata_text(data['algorithms']))
@@ -790,8 +794,8 @@ def cmd_done(args):
     require(not (args.all and args.target is not None), '--all은 완료 대상을 함께 지정할 수 없습니다.')
     metadata_changed = any(value is not None for value in
                            (args.level, args.solve_method, args.data_structures, args.algorithms))
-    require(not (args.all and (args.minutes is not None or metadata_changed)),
-            '--all에는 --minutes, 난이도, 풀이 방식, 자료구조, 알고리즘 옵션을 함께 사용할 수 없습니다.')
+    require(not (args.all and (args.minutes is not None or metadata_changed or args.add_taxonomy)),
+            '--all에는 --minutes, 난이도, 풀이 방식, 자료구조, 알고리즘, taxonomy 옵션을 함께 사용할 수 없습니다.')
     if args.all:
         targets = draft_records(user, day)
         require(targets, '작성 중인 기록이 없습니다.')
@@ -812,11 +816,15 @@ def cmd_done(args):
             data['data_structures'] = normalize(csv_values(args.data_structures), 'data_structures')
         if args.algorithms is not None:
             data['algorithms'] = normalize(csv_values(args.algorithms), 'algorithms')
+        if args.add_taxonomy:
+            register_taxonomy(unknown_taxonomy_terms(data), path=ROOT / 'study_wiki' / 'taxonomy.json')
+            data['data_structures'] = normalize(data['data_structures'], 'data_structures')
+            data['algorithms'] = normalize(data['algorithms'], 'algorithms')
         data['status'] = 'completed' if record_type(data) == 'note' else 'solved'
         if args.minutes is not None:
             data['minutes'] = args.minutes
         write_json(folder / 'meta.json', data)
-        if metadata_changed and record_type(data) == 'problem':
+        if (metadata_changed or args.add_taxonomy) and record_type(data) == 'problem':
             sync_problem_metadata(folder, data)
     refresh(user, day)
     if args.all:
@@ -1113,6 +1121,7 @@ def parser():
     new.add_argument('--data-structures', '--structures', default='', help='사용한 자료구조 (쉼표로 구분)')
     new.add_argument('--algorithms', default='', help='사용한 알고리즘 (쉼표로 구분)')
     new.add_argument('--tags', default='', help='쉼표 구분. 핵심 분류 별칭은 통합하고, 그 외 표현은 Wiki 검색어로 보존')
+    new.add_argument('--add-taxonomy', action='store_true', help='LLM이 제안한 새 자료구조·알고리즘을 taxonomy.json에 등록 (관리 PR에서 사용)')
     new.set_defaults(func=cmd_new)
     note = sub.add_parser('note', help='학습 정리 템플릿 생성 (코드·문제 URL 불필요)')
     commands['note'] = note
@@ -1131,6 +1140,7 @@ def parser():
     done.add_argument('--solve-method', '--method', choices=SOLVING_METHODS, help='풀이 방식 덮어쓰기')
     done.add_argument('--data-structures', '--structures', help='사용한 자료구조 덮어쓰기 (쉼표로 구분)')
     done.add_argument('--algorithms', help='사용한 알고리즘 덮어쓰기 (쉼표로 구분)')
+    done.add_argument('--add-taxonomy', action='store_true', help='LLM이 제안한 새 자료구조·알고리즘을 taxonomy.json에 등록 (관리 PR에서 사용)')
     done.set_defaults(func=cmd_done)
     goal = sub.add_parser('goal', help='기본 목표 또는 특정 하루의 목표 변경 (none: 자율 기록)')
     commands['goal'] = goal
