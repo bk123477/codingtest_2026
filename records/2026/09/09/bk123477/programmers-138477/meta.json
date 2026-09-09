@@ -1,0 +1,25 @@
+{
+  "type": "problem",
+  "user": "bk123477",
+  "date": "2026-09-09",
+  "platform": "programmers",
+  "problem_id": "138477",
+  "url": "https://school.programmers.co.kr/learn/courses/30/lessons/138477",
+  "title": "명예의 전당 (1)",
+  "language": "python",
+  "solution": "solution.py",
+  "status": "draft",
+  "level": "Lv.1",
+  "solve_method": "self",
+  "data_structures": [
+    "힙"
+  ],
+  "algorithms": [
+    "구현"
+  ],
+  "tags": [
+    "상위 k개",
+    "최하위 점수"
+  ],
+  "minutes": null
+}
