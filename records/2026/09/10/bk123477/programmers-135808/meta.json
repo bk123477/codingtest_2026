@@ -1,0 +1,26 @@
+{
+  "type": "problem",
+  "user": "bk123477",
+  "date": "2026-09-10",
+  "platform": "programmers",
+  "problem_id": "135808",
+  "url": "https://school.programmers.co.kr/learn/courses/30/lessons/135808",
+  "title": "과일 장수",
+  "language": "python",
+  "solution": "solution.py",
+  "status": "solved",
+  "level": "Lv.1",
+  "solve_method": "self",
+  "data_structures": [
+    "덱"
+  ],
+  "algorithms": [
+    "정렬",
+    "그리디"
+  ],
+  "tags": [
+    "사과 상자",
+    "최대 이익"
+  ],
+  "minutes": null
+}
