@@ -1,0 +1,31 @@
+{
+  "type": "problem",
+  "user": "bk123477",
+  "date": "2026-09-09",
+  "platform": "programmers",
+  "problem_id": "17681",
+  "url": "https://school.programmers.co.kr/learn/courses/30/lessons/17681",
+  "title": "[1차] 비밀지도",
+  "language": "python",
+  "solution": "solution.py",
+  "status": "solved",
+  "level": "Lv.1",
+  "solve_method": "self",
+  "data_structures": [
+    "배열"
+  ],
+  "algorithms": [
+    "비트 연산",
+    "구현"
+  ],
+  "tags": [
+    "이진수",
+    "지도 병합"
+  ],
+  "minutes": null,
+  "exam": {
+    "name": "2018 KAKAO BLIND RECRUITMENT",
+    "organization": "카카오",
+    "year": "2018"
+  }
+}

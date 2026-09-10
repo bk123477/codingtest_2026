@@ -1,0 +1,23 @@
+{
+  "type": "problem",
+  "user": "bk123477",
+  "date": "2026-09-09",
+  "platform": "programmers",
+  "problem_id": "136798",
+  "url": "https://school.programmers.co.kr/learn/courses/30/lessons/136798",
+  "title": "기사단원의 무기",
+  "language": "python",
+  "solution": "solution.py",
+  "status": "solved",
+  "level": "Lv.1",
+  "solve_method": "self",
+  "data_structures": [],
+  "algorithms": [
+    "수학",
+    "구현"
+  ],
+  "tags": [
+    "약수 개수"
+  ],
+  "minutes": null
+}

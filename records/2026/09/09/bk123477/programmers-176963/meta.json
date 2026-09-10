@@ -1,0 +1,24 @@
+{
+  "type": "problem",
+  "user": "bk123477",
+  "date": "2026-09-09",
+  "platform": "programmers",
+  "problem_id": "176963",
+  "url": "https://school.programmers.co.kr/learn/courses/30/lessons/176963",
+  "title": "추억 점수",
+  "language": "python",
+  "solution": "solution.py",
+  "status": "solved",
+  "level": "Lv.1",
+  "solve_method": "self",
+  "data_structures": [
+    "해시"
+  ],
+  "algorithms": [
+    "구현"
+  ],
+  "tags": [
+    "이름별 점수"
+  ],
+  "minutes": null
+}
