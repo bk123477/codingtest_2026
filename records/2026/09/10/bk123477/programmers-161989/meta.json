@@ -1,0 +1,26 @@
+{
+  "type": "problem",
+  "user": "bk123477",
+  "date": "2026-09-10",
+  "platform": "programmers",
+  "problem_id": "161989",
+  "url": "https://school.programmers.co.kr/learn/courses/30/lessons/161989",
+  "title": "덧칠하기",
+  "language": "python",
+  "solution": "solution.py",
+  "status": "solved",
+  "level": "Lv.1",
+  "solve_method": "self",
+  "data_structures": [
+    "배열"
+  ],
+  "algorithms": [
+    "그리디",
+    "구현"
+  ],
+  "tags": [
+    "구간 덧칠",
+    "롤러"
+  ],
+  "minutes": null
+}

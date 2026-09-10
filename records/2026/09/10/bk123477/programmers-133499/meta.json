@@ -1,0 +1,26 @@
+{
+  "type": "problem",
+  "user": "bk123477",
+  "date": "2026-09-10",
+  "platform": "programmers",
+  "problem_id": "133499",
+  "url": "https://school.programmers.co.kr/learn/courses/30/lessons/133499",
+  "title": "옹알이 (2)",
+  "language": "python",
+  "solution": "solution.py",
+  "status": "solved",
+  "level": "Lv.1",
+  "solve_method": "self",
+  "data_structures": [
+    "배열"
+  ],
+  "algorithms": [
+    "문자열 처리",
+    "구현"
+  ],
+  "tags": [
+    "발음 조합",
+    "연속 발음 제한"
+  ],
+  "minutes": null
+}

@@ -1,0 +1,26 @@
+{
+  "type": "problem",
+  "user": "bk123477",
+  "date": "2026-09-10",
+  "platform": "programmers",
+  "problem_id": "12901",
+  "url": "https://school.programmers.co.kr/learn/courses/30/lessons/12901",
+  "title": "2016년",
+  "language": "python",
+  "solution": "solution.py",
+  "status": "solved",
+  "level": "Lv.1",
+  "solve_method": "self",
+  "data_structures": [
+    "배열"
+  ],
+  "algorithms": [
+    "수학",
+    "구현"
+  ],
+  "tags": [
+    "날짜 계산",
+    "요일 계산"
+  ],
+  "minutes": null
+}

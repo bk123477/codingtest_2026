@@ -1,0 +1,25 @@
+{
+  "type": "problem",
+  "user": "bk123477",
+  "date": "2026-09-10",
+  "platform": "programmers",
+  "problem_id": "340199",
+  "url": "https://school.programmers.co.kr/learn/courses/30/lessons/340199",
+  "title": "[PCCE 기출문제] 9번 / 지폐 접기",
+  "language": "python",
+  "solution": "solution.py",
+  "status": "solved",
+  "level": "Lv.1",
+  "solve_method": "self",
+  "data_structures": [
+    "배열"
+  ],
+  "algorithms": [
+    "구현"
+  ],
+  "tags": [
+    "지폐 접기",
+    "크기 비교"
+  ],
+  "minutes": null
+}
