@@ -1,0 +1,31 @@
+{
+  "type": "problem",
+  "user": "bk123477",
+  "date": "2026-09-11",
+  "platform": "programmers",
+  "problem_id": "42889",
+  "url": "https://school.programmers.co.kr/learn/courses/30/lessons/42889",
+  "title": "실패율",
+  "language": "python",
+  "solution": "solution.py",
+  "status": "solved",
+  "level": "Lv.1",
+  "solve_method": "self",
+  "data_structures": [
+    "배열"
+  ],
+  "algorithms": [
+    "정렬",
+    "구현"
+  ],
+  "tags": [
+    "정렬",
+    "구현"
+  ],
+  "minutes": null,
+  "exam": {
+    "name": "2019 KAKAO BLIND RECRUITMENT",
+    "organization": "카카오",
+    "year": "2019"
+  }
+}

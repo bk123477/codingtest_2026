@@ -1,0 +1,26 @@
+{
+  "type": "problem",
+  "user": "bk123477",
+  "date": "2026-09-11",
+  "platform": "programmers",
+  "problem_id": "140108",
+  "url": "https://school.programmers.co.kr/learn/courses/30/lessons/140108",
+  "title": "문자열 나누기",
+  "language": "python",
+  "solution": "solution.py",
+  "status": "solved",
+  "level": "Lv.1",
+  "solve_method": "self",
+  "data_structures": [
+    "덱"
+  ],
+  "algorithms": [
+    "구현",
+    "문자열 처리"
+  ],
+  "tags": [
+    "구현",
+    "문자열 처리"
+  ],
+  "minutes": null
+}

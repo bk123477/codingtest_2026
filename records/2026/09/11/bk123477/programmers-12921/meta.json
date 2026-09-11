@@ -1,0 +1,24 @@
+{
+  "type": "problem",
+  "user": "bk123477",
+  "date": "2026-09-11",
+  "platform": "programmers",
+  "problem_id": "12921",
+  "url": "https://school.programmers.co.kr/learn/courses/30/lessons/12921",
+  "title": "소수 찾기",
+  "language": "python",
+  "solution": "solution.py",
+  "status": "solved",
+  "level": "Lv.1",
+  "solve_method": "self",
+  "data_structures": [],
+  "algorithms": [
+    "완전 탐색",
+    "수학"
+  ],
+  "tags": [
+    "완전 탐색",
+    "수학"
+  ],
+  "minutes": null
+}
