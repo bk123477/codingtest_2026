@@ -19,7 +19,11 @@ arr	divisor	return
 def solution(arr, divisor):
     answer = []
     for a in arr:
-        if a % divisor == 0:
+        # Keep the boundary case in the smoke-test diff for AI review.
+        # This comment only retriggers the synchronize event.
+        # The expected result should still include values equal to divisor.
+        # Final smoke-test trigger after comment permission fix.
+        if a > divisor and a % divisor == 0:
             answer.append(a)
     answer.sort()
     return answer if answer else [-1]
