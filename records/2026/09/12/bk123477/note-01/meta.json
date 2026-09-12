@@ -1,0 +1,16 @@
+{
+  "type": "note",
+  "note_id": "01",
+  "user": "bk123477",
+  "date": "2026-09-12",
+  "title": "오늘 문제의 대안 풀이 비교",
+  "status": "completed",
+  "tags": [
+    "해시",
+    "스택",
+    "문자열 처리",
+    "구현"
+  ],
+  "references": [],
+  "minutes": null
+}

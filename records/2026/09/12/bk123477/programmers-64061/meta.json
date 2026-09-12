@@ -1,0 +1,31 @@
+{
+  "type": "problem",
+  "user": "bk123477",
+  "date": "2026-09-12",
+  "platform": "programmers",
+  "problem_id": "64061",
+  "url": "https://school.programmers.co.kr/learn/courses/30/lessons/64061",
+  "title": "크레인 인형뽑기 게임",
+  "language": "python",
+  "solution": "solution.py",
+  "status": "solved",
+  "level": "Lv.1",
+  "solve_method": "",
+  "data_structures": [
+    "배열",
+    "스택"
+  ],
+  "algorithms": [
+    "구현"
+  ],
+  "tags": [
+    "카카오",
+    "인형뽑기"
+  ],
+  "minutes": null,
+  "exam": {
+    "name": "2019 카카오 개발자 겨울 인턴십",
+    "organization": "카카오",
+    "year": "2019"
+  }
+}

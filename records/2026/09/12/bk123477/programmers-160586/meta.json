@@ -1,0 +1,26 @@
+{
+  "type": "problem",
+  "user": "bk123477",
+  "date": "2026-09-12",
+  "platform": "programmers",
+  "problem_id": "160586",
+  "url": "https://school.programmers.co.kr/learn/courses/30/lessons/160586",
+  "title": "대충 만든 자판",
+  "language": "python",
+  "solution": "solution.py",
+  "status": "solved",
+  "level": "Lv.1",
+  "solve_method": "",
+  "data_structures": [
+    "배열"
+  ],
+  "algorithms": [
+    "구현",
+    "문자열 처리"
+  ],
+  "tags": [
+    "키패드",
+    "최소 누름 횟수"
+  ],
+  "minutes": null
+}
