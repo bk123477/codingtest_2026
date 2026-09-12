@@ -10,19 +10,19 @@
 
 | 참여자 | 오늘 완료 / 목표 | 누적 완료 |
 | --- | --- | --- |
-| bk123477 | 0 / 5 | 57 |
+| bk123477 | 6 / 5 | 63 |
 
 ## 유형별 누적 완료
 
 | 참여자 | 코딩 문제 | 학습 정리 |
 | --- | --- | --- |
-| bk123477 | 55 | 2 |
+| bk123477 | 60 | 3 |
 
 ## 최근 14일
 
 | 날짜 | bk123477 |
 | --- | --- |
-| 2026-09-12 | — 0/5 |
+| 2026-09-12 | [✅ 6/5](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/12/bk123477/README.md) |
 | 2026-09-11 | [✅ 6/5](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/11/bk123477/README.md) |
 | 2026-09-10 | [✅ 6/5](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/10/bk123477/README.md) |
 | 2026-09-09 | [✅ 5/5](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/09/bk123477/README.md) |
@@ -41,6 +41,7 @@
 
 | 문제 | 날짜 | 작성자 | 언어 | 코드 |
 | --- | --- | --- | --- | --- |
+| [성격 유형 검사하기](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/12/bk123477/programmers-118666/README.md) | 2026-09-12 | bk123477 | python | [보기](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/12/bk123477/programmers-118666/solution.py) |
 | [2016년](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/10/bk123477/programmers-12901/README.md) | 2026-09-10 | bk123477 | python | [보기](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/10/bk123477/programmers-12901/solution.py) |
 | [가운데 글자 가져오기](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/08/bk123477/programmers-12903/README.md) | 2026-09-08 | bk123477 | python | [보기](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/08/bk123477/programmers-12903/solution.py) |
 | [나누어 떨어지는 숫자 배열](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/07/bk123477/programmers-12910/README.md) | 2026-09-07 | bk123477 | python | [보기](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/07/bk123477/programmers-12910/solution.py) |
@@ -71,9 +72,11 @@
 | [직사각형 별찍기](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/08/bk123477/programmers-12969/README.md) | 2026-09-08 | bk123477 | python | [보기](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/08/bk123477/programmers-12969/solution.py) |
 | [소수 만들기](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/11/bk123477/programmers-12977/README.md) | 2026-09-11 | bk123477 | python | [보기](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/11/bk123477/programmers-12977/solution.py) |
 | [예산](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/08/bk123477/programmers-12982/README.md) | 2026-09-08 | bk123477 | python | [보기](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/08/bk123477/programmers-12982/solution.py) |
+| [숫자 짝꿍](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/12/bk123477/programmers-131128/README.md) | 2026-09-12 | bk123477 | python | [보기](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/12/bk123477/programmers-131128/solution.py) |
 | [삼총사](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/08/bk123477/programmers-131705/README.md) | 2026-09-08 | bk123477 | python | [보기](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/08/bk123477/programmers-131705/solution.py) |
 | [콜라 문제](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/08/bk123477/programmers-132267/README.md) | 2026-09-08 | bk123477 | python | [보기](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/08/bk123477/programmers-132267/solution.py) |
 | [옹알이 (2)](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/10/bk123477/programmers-133499/README.md) | 2026-09-10 | bk123477 | python | [보기](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/10/bk123477/programmers-133499/solution.py) |
+| [햄버거 만들기](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/12/bk123477/programmers-133502/README.md) | 2026-09-12 | bk123477 | python | [보기](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/12/bk123477/programmers-133502/solution.py) |
 | [푸드 파이트 대회](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/08/bk123477/programmers-134240/README.md) | 2026-09-08 | bk123477 | python | [보기](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/08/bk123477/programmers-134240/solution.py) |
 | [과일 장수](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/10/bk123477/programmers-135808/README.md) | 2026-09-10 | bk123477 | python | [보기](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/10/bk123477/programmers-135808/solution.py) |
 | [기사단원의 무기](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/09/bk123477/programmers-136798/README.md) | 2026-09-09 | bk123477 | python | [보기](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/09/bk123477/programmers-136798/solution.py) |
@@ -83,11 +86,13 @@
 | [크기가 작은 부분 문자열](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/08/bk123477/programmers-147355/README.md) | 2026-09-08 | bk123477 | python | [보기](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/08/bk123477/programmers-147355/solution.py) |
 | [둘만의 암호](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/11/bk123477/programmers-155652/README.md) | 2026-09-11 | bk123477 | python | [보기](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/11/bk123477/programmers-155652/solution.py) |
 | [카드 뭉치](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/09/bk123477/programmers-159994/README.md) | 2026-09-09 | bk123477 | python | [보기](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/09/bk123477/programmers-159994/solution.py) |
+| [대충 만든 자판](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/12/bk123477/programmers-160586/README.md) | 2026-09-12 | bk123477 | python | [보기](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/12/bk123477/programmers-160586/solution.py) |
 | [덧칠하기](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/10/bk123477/programmers-161989/README.md) | 2026-09-10 | bk123477 | python | [보기](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/10/bk123477/programmers-161989/solution.py) |
 | [&#91;1차&#93; 비밀지도](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/09/bk123477/programmers-17681/README.md) | 2026-09-09 | bk123477 | python | [보기](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/09/bk123477/programmers-17681/solution.py) |
 | [추억 점수](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/09/bk123477/programmers-176963/README.md) | 2026-09-09 | bk123477 | python | [보기](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/09/bk123477/programmers-176963/solution.py) |
 | [&#91;PCCE 기출문제&#93; 9번 / 지폐 접기](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/10/bk123477/programmers-340199/README.md) | 2026-09-10 | bk123477 | python | [보기](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/10/bk123477/programmers-340199/solution.py) |
 | [실패율](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/11/bk123477/programmers-42889/README.md) | 2026-09-11 | bk123477 | python | [보기](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/11/bk123477/programmers-42889/solution.py) |
+| [크레인 인형뽑기 게임](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/12/bk123477/programmers-64061/README.md) | 2026-09-12 | bk123477 | python | [보기](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/12/bk123477/programmers-64061/solution.py) |
 | [두 개 뽑아서 더하기](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/08/bk123477/programmers-68644/README.md) | 2026-09-08 | bk123477 | python | [보기](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/08/bk123477/programmers-68644/solution.py) |
 | [3진법 뒤집기](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/08/bk123477/programmers-68935/README.md) | 2026-09-08 | bk123477 | python | [보기](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/08/bk123477/programmers-68935/solution.py) |
 | [내적](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/07/bk123477/programmers-70128/README.md) | 2026-09-07 | bk123477 | python | [보기](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/07/bk123477/programmers-70128/solution.py) |
@@ -101,5 +106,6 @@
 
 | 주제 | 날짜 | 작성자 | 태그 |
 | --- | --- | --- | --- |
+| [오늘 문제의 대안 풀이 비교](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/12/bk123477/note-01/README.md) | 2026-09-12 | bk123477 | 해시, 스택, 문자열 처리, 구현 |
 | [오늘 풀이의 다른 접근 정리](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/11/bk123477/note-01/README.md) | 2026-09-11 | bk123477 | 수학, 정렬, 구현 |
 | [오늘 풀이의 다른 접근 정리](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/10/bk123477/note-01/README.md) | 2026-09-10 | bk123477 | 문자열 처리, 정렬, 그리디 |
