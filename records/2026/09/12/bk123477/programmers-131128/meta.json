@@ -1,0 +1,25 @@
+{
+  "type": "problem",
+  "user": "bk123477",
+  "date": "2026-09-12",
+  "platform": "programmers",
+  "problem_id": "131128",
+  "url": "https://school.programmers.co.kr/learn/courses/30/lessons/131128",
+  "title": "숫자 짝꿍",
+  "language": "python",
+  "solution": "solution.py",
+  "status": "solved",
+  "level": "Lv.1",
+  "solve_method": "",
+  "data_structures": [
+    "해시"
+  ],
+  "algorithms": [
+    "구현"
+  ],
+  "tags": [
+    "숫자 짝꿍",
+    "구현"
+  ],
+  "minutes": null
+}
