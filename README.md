@@ -1,6 +1,6 @@
 # 스터디 학습 현황
 
-기준일: **2026-09-22 (KST)** · 완료는 자기 신고
+기준일: **2026-09-23 (KST)** · 완료는 자기 신고
 
 현재 체크아웃된 기록을 집계합니다. progress 브랜치의 보고서는 main에 합쳐진 기록 기준입니다.
 
@@ -22,6 +22,7 @@
 
 | 날짜 | bk123477 |
 | --- | --- |
+| 2026-09-23 | — 0/5 |
 | 2026-09-22 | — 0/5 |
 | 2026-09-21 | — 0/5 |
 | 2026-09-20 | — 0/5 |
@@ -35,7 +36,6 @@
 | 2026-09-12 | [✅ 6/5](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/12/bk123477/README.md) |
 | 2026-09-11 | [✅ 6/5](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/11/bk123477/README.md) |
 | 2026-09-10 | [✅ 6/5](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/10/bk123477/README.md) |
-| 2026-09-09 | [✅ 5/5](https://github.com/bk123477/codingtest_2026/blob/main/records/2026/09/09/bk123477/README.md) |
 
 ## 문제별 모아보기
 
